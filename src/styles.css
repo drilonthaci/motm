@@ -3091,3 +3091,32 @@ body.scroll-locked {
   .statrow .v { font-size: 14px; }
   .statrow .v .rating { min-width: 32px; }
 }
+
+/* ---------- self-rating guard ---------- */
+
+/* Your own row on the rating card: no slider, just a marker. */
+.rrow.is-you {
+  grid-template-columns: minmax(0, 1fr) auto;
+  opacity: .72;
+}
+.rrow.is-you .nm { font-weight: 600; }
+
+.you-tag {
+  flex: none;
+  padding: 4px 11px;
+  border-radius: 999px;
+  background: var(--surface-3);
+  border: 1px solid var(--line);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  color: var(--text-2);
+}
+
+/* The "which one are you" picker can get long, so it scrolls. */
+.claim-chips {
+  max-height: 46vh;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}

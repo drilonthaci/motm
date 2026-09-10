@@ -8,7 +8,10 @@ import { ratingSummary, manOfTheMatch } from './model.js';
 export const app = $state({
   uid: null,
   name: '',
+  /** Which roster player this device belongs to, so you cannot rate yourself. */
+  meId: null,
   needsName: false,
+  needsClaim: false,
   ready: false,
   players: [],
   matches: [],
@@ -44,9 +47,12 @@ export async function start() {
   }
 
   onSnapshot(doc(db, 'profiles', app.uid), (snap) => {
-    const name = snap.data()?.displayName;
-    if (name) app.name = name;
-    else app.needsName = true;
+    const data = snap.data();
+    app.name = data?.displayName ?? '';
+    app.needsName = !data?.displayName;
+    app.meId = data?.playerId ?? null;
+    // Only ask who you are once a name exists and the roster has loaded.
+    app.needsClaim = Boolean(data?.displayName) && data?.playerId === undefined;
   }, (e) => blame(e, 'read your profile'));
 
   onSnapshot(query(collection(db, 'players'), orderBy('name')), (snap) => {
@@ -68,6 +74,26 @@ export async function saveName(raw) {
   app.name = name;
   app.needsName = false;
   say(`Welcome, ${name.split(' ')[0]}.`);
+}
+
+/** Link this device to a roster player. `null` means "I do not play", which
+ *  is still an answer, so we store it rather than asking again. */
+export async function claimPlayer(playerId) {
+  // `undefined` means "ask me again", used by the change button.
+  if (playerId === undefined) {
+    app.needsClaim = true;
+    return;
+  }
+  try {
+    await setDoc(
+      doc(db, 'profiles', app.uid),
+      { displayName: app.name, playerId: playerId ?? null, updatedAt: serverTimestamp() },
+      { merge: true }
+    );
+    app.meId = playerId ?? null;
+    app.needsClaim = false;
+    say(playerId ? 'Saved. You will not be able to rate yourself.' : 'Saved.');
+  } catch (e) { blame(e, 'save who you are'); }
 }
 
 /* ---------- roster ---------- */
@@ -138,6 +164,8 @@ export function watchCards(matchId) {
 export async function submitCard(matchId, scores) {
   const clean = {};
   for (const [playerId, value] of Object.entries(scores)) {
+    // Never let your own score through, whatever the UI happens to hold.
+    if (playerId === app.meId) continue;
     const n = Number(value);
     if (Number.isFinite(n) && n > 0) clean[playerId] = Math.min(10, Math.max(1, Math.round(n * 10) / 10));
   }

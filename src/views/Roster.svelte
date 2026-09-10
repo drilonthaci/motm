@@ -1,6 +1,6 @@
 <script>
   import { POSITIONS, seasonTable, ratingColor } from '../lib/model.js';
-  import { app, addPlayer, updatePlayer, removePlayer } from '../lib/store.svelte.js';
+  import { app, addPlayer, updatePlayer, removePlayer, claimPlayer } from '../lib/store.svelte.js';
   import Icon from '../lib/Icon.svelte';
 
   let name = $state('');
@@ -34,7 +34,16 @@
 
 <div class="page-head">
   <h1>Squad</h1>
-  <span class="label">{app.players.length} {app.players.length === 1 ? 'player' : 'players'}</span>
+  <div class="row" style="gap:10px">
+    <span class="label">{app.players.length} {app.players.length === 1 ? 'player' : 'players'}</span>
+    <button class="btn sm" onclick={() => claimPlayer(undefined)} title="Change which player you are">
+      {#if app.meId}
+        You: {app.players.find((p) => p.id === app.meId)?.name ?? 'unknown'}
+      {:else}
+        Set who you are
+      {/if}
+    </button>
+  </div>
 </div>
 
 <div class="split-aside">

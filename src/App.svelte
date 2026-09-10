@@ -1,6 +1,6 @@
 <script>
   import { lockScroll } from './lib/scrollLock.js';
-  import { app, start, saveName } from './lib/store.svelte.js';
+  import { app, start, saveName, claimPlayer } from './lib/store.svelte.js';
   import { route } from './lib/router.svelte.js';
   import Matches from './views/Matches.svelte';
   import MatchDetail from './views/MatchDetail.svelte';
@@ -73,6 +73,25 @@
     <Matches />
   {/if}
 </main>
+
+{#if app.needsClaim && !app.needsName && !app.fatal && app.players.length}
+  <div class="backdrop">
+    <div class="modal">
+      <h2>Which one are you?</h2>
+      <p class="muted" style="font-size:13px; margin:8px 0 18px">
+        We use this to keep you off your own rating card. Nobody can rate themselves.
+      </p>
+      <div class="chips claim-chips">
+        {#each app.players as p (p.id)}
+          <button onclick={() => claimPlayer(p.id)}>{p.name}</button>
+        {/each}
+      </div>
+      <button class="linkbtn" style="margin-top:18px" onclick={() => claimPlayer(null)}>
+        I am not on this list
+      </button>
+    </div>
+  </div>
+{/if}
 
 {#if app.needsName && !app.fatal}
   <div class="backdrop">

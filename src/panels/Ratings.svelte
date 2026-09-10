@@ -26,6 +26,8 @@
     (side === 'A' ? match.teamA?.name : match.teamB?.name) || (side === 'A' ? 'Blacks' : 'Whites');
 
   let rated = $derived(Object.values(scores).filter((v) => Number(v) > 0).length);
+  /* You are never on your own card, so the total excludes you. */
+  let rateable = $derived(squad.filter((s) => s.id !== app.meId).length);
 
   const clear = (id) => {
     const next = { ...scores };
@@ -67,7 +69,7 @@
     <section class="card">
       <div class="card-head">
         <h2>Your card</h2>
-        <span class="label">{rated}/{squad.length} rated</span>
+        <span class="label">{rated}/{rateable} rated</span>
       </div>
 
       {#each ['A', 'B'] as side}
@@ -78,6 +80,15 @@
             {teamName(side)}
           </div>
           {#each members as s (s.id)}
+            {#if s.id === app.meId}
+              <div class="rrow rate is-you">
+                <span class="nm">
+                  {nameOf(s.id)}
+                  <small>{s.bench ? `${s.pos} · reserve` : s.pos}</small>
+                </span>
+                <span class="you-tag">You</span>
+              </div>
+            {:else}
             <div class="rrow rate">
               <span class="nm">
                 {nameOf(s.id)}
@@ -97,6 +108,7 @@
                 <span class="rating none">-</span>
               {/if}
             </div>
+            {/if}
           {/each}
         {/if}
       {/each}

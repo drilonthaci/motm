@@ -35,6 +35,18 @@
     scores = next;
   };
 
+  /* Who has submitted a card. Names only, never their individual scores:
+     accountability without the grade inflation that named scores cause. */
+  let voters = $derived(
+    app.cards
+      .map((c) => ({
+        uid: c.uid,
+        name: c.voterName?.trim() || 'Someone',
+        mine: c.uid === app.uid
+      }))
+      .sort((a, b) => Number(b.mine) - Number(a.mine) || a.name.localeCompare(b.name))
+  );
+
   let ranked = $derived(
     squad
       .map((s) => ({ ...s, stat: summary[s.id] }))
@@ -162,6 +174,18 @@
         <p class="muted" style="padding:14px; margin:0; font-size:13px">
           No cards submitted yet. Yours will be the first.
         </p>
+      {/if}
+
+      {#if voters.length}
+        <div class="voters">
+          <p class="label">Rated by</p>
+          <div class="voter-chips">
+            {#each voters as v (v.uid)}
+              <span class="voter" class:mine={v.mine}>{v.name}{#if v.mine}&nbsp;(you){/if}</span>
+            {/each}
+          </div>
+          <p class="voters-note">Who rated is public. What each person scored is not.</p>
+        </div>
       {/if}
     </section>
   </div>

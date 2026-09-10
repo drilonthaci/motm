@@ -1,6 +1,6 @@
 <script>
   import { lockScroll } from './lib/scrollLock.js';
-  import { app, start, saveName, claimPlayer } from './lib/store.svelte.js';
+  import { app, start, saveName, claimPlayer, skipClaim } from './lib/store.svelte.js';
   import { route } from './lib/router.svelte.js';
   import Matches from './views/Matches.svelte';
   import MatchDetail from './views/MatchDetail.svelte';
@@ -74,20 +74,26 @@
   {/if}
 </main>
 
-{#if app.needsClaim && !app.needsName && !app.fatal && app.players.length}
+{#if app.needsClaim && !app.claimSkipped && !app.needsName && !app.fatal && app.players.length}
   <div class="backdrop">
     <div class="modal">
       <h2>Which one are you?</h2>
       <p class="muted" style="font-size:13px; margin:8px 0 18px">
-        We use this to keep you off your own rating card. Nobody can rate themselves.
+        This keeps you off your own rating card. Pick once, it cannot be changed afterwards.
       </p>
       <div class="chips claim-chips">
         {#each app.players as p (p.id)}
-          <button onclick={() => claimPlayer(p.id)}>{p.name}</button>
+          {@const takenBy = app.claims[p.id]}
+          {@const mine = takenBy === app.uid}
+          <button
+            disabled={Boolean(takenBy) && !mine}
+            title={takenBy && !mine ? 'Already claimed by someone else' : ''}
+            onclick={() => claimPlayer(p.id)}
+          >{p.name}{#if takenBy && !mine}&nbsp;·&nbsp;taken{/if}</button>
         {/each}
       </div>
-      <button class="linkbtn" style="margin-top:18px" onclick={() => claimPlayer(null)}>
-        I am not on this list
+      <button class="linkbtn" style="margin-top:18px" onclick={skipClaim}>
+        Not playing? Skip, but you will not be able to rate
       </button>
     </div>
   </div>

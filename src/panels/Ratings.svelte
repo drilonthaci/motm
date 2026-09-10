@@ -2,7 +2,7 @@
   import Crest from '../lib/Crest.svelte';
   import Icon from '../lib/Icon.svelte';
   import { allSquad, ratingSummary, manOfTheMatch, ratingColor, startersOf, benchOf } from '../lib/model.js';
-  import { app, submitCard } from '../lib/store.svelte.js';
+  import { app, submitCard, claimPlayer } from '../lib/store.svelte.js';
 
   let { match } = $props();
 
@@ -56,7 +56,18 @@
   </div>
 {/if}
 
-{#if !squad.length}
+{#if !app.meId}
+  <div class="card">
+    <div class="emptystate">
+      <div class="ico"><Icon name="player" /></div>
+      <h3>Tell us who you are first</h3>
+      <p>Ratings are tied to a player so nobody can rate themselves. Pick yourself once and you can rate every match.</p>
+      <button class="btn primary" style="margin-top:16px" onclick={() => claimPlayer(undefined)}>
+        Pick who I am
+      </button>
+    </div>
+  </div>
+{:else if !squad.length}
   <div class="card">
     <div class="emptystate">
       <div class="ico"><Icon name="squad" /></div>

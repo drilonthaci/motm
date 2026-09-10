@@ -12,6 +12,10 @@ export const app = $state({
   meId: null,
   needsName: false,
   needsClaim: false,
+  /** Player ids already claimed by someone, keyed to the owning uid. */
+  claims: {},
+  /** Dismissed the picker for this session without claiming. */
+  claimSkipped: false,
   ready: false,
   players: [],
   matches: [],
@@ -55,6 +59,12 @@ export async function start() {
     app.needsClaim = Boolean(data?.displayName) && data?.playerId === undefined;
   }, (e) => blame(e, 'read your profile'));
 
+  onSnapshot(collection(db, 'claims'), (snap) => {
+    const map = {};
+    snap.docs.forEach((d) => (map[d.id] = d.data().uid));
+    app.claims = map;
+  }, (e) => blame(e, 'read the claim list'));
+
   onSnapshot(query(collection(db, 'players'), orderBy('name')), (snap) => {
     app.players = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
   }, (e) => blame(e, 'read the roster'));
@@ -87,19 +97,43 @@ export async function claimPlayer(playerId) {
   if (playerId === undefined) {
     if (app.meId) return say('Who you are is locked. Ask an organiser to change it.');
     app.needsClaim = true;
+    app.claimSkipped = false;
     return;
   }
   if (app.meId) return say('Who you are is locked.');
+
+  try {
+    /* The claim doc is the lock. Rules permit create only, so if someone
+       already holds this player the write fails and nobody can end up
+       sharing an identity. Written before the profile so a lost race
+       leaves no half-claimed profile behind. */
+    await setDoc(doc(db, 'claims', playerId), {
+      uid: app.uid,
+      claimedAt: serverTimestamp()
+    });
+  } catch (e) {
+    if (e?.code === 'permission-denied') {
+      return say('Somebody has already claimed that player. Pick another, or ask an organiser.');
+    }
+    return blame(e, 'claim that player');
+  }
+
   try {
     await setDoc(
       doc(db, 'profiles', app.uid),
-      { displayName: app.name, playerId: playerId ?? null, updatedAt: serverTimestamp() },
+      { displayName: app.name, playerId, updatedAt: serverTimestamp() },
       { merge: true }
     );
-    app.meId = playerId ?? null;
+    app.meId = playerId;
     app.needsClaim = false;
-    say(playerId ? 'Saved. You will not be able to rate yourself.' : 'Saved.');
+    app.claimSkipped = false;
+    say('Saved. You will not be able to rate yourself.');
   } catch (e) { blame(e, 'save who you are'); }
+}
+
+/** Close the picker without claiming. Rating stays blocked until they do. */
+export function skipClaim() {
+  app.claimSkipped = true;
 }
 
 /* ---------- roster ---------- */

@@ -11,17 +11,31 @@ service cloud.firestore {
       return get(/databases/$(database)/documents/profiles/$(userId)).data;
     }
 
-    // Has this profile claimed a roster player?
     function hasClaim(userId) {
       return exists(/databases/$(database)/documents/profiles/$(userId))
         && 'playerId' in profileData(userId)
         && profileData(userId).playerId != null;
     }
 
+    function claimOwner(playerId) {
+      return exists(/databases/$(database)/documents/claims/$(playerId))
+        ? get(/databases/$(database)/documents/claims/$(playerId)).data.uid
+        : null;
+    }
+
     function validName(d) {
       return d.displayName is string
         && d.displayName.size() >= 2
         && d.displayName.size() <= 40;
+    }
+
+    // One document per claimed player. Create-only, so Firestore itself
+    // guarantees that two people can never hold the same identity: the
+    // second create lands on an existing document and is refused.
+    match /claims/{playerId} {
+      allow read: if signedIn();
+      allow create: if signedIn() && request.resource.data.uid == request.auth.uid;
+      allow update, delete: if false;
     }
 
     match /profiles/{userId} {
@@ -31,19 +45,26 @@ service cloud.firestore {
         && request.auth.uid == userId
         && validName(request.resource.data);
 
-      // playerId is write-once. Unset or null may become a real player,
-      // because that only ever narrows what you are allowed to rate.
-      // Changing or clearing an existing claim is refused, since switching
-      // identity would be a one-tap route to rating yourself.
+      // playerId is write-once, and may only be set to a player whose claim
+      // document you already hold. Together those stop both identity
+      // switching and impersonating someone else.
       allow update: if signedIn()
         && request.auth.uid == userId
         && validName(request.resource.data)
         && (
-          !('playerId' in resource.data)
-          || resource.data.playerId == null
-          || (
-            'playerId' in request.resource.data
+          (
+            'playerId' in resource.data
+            && resource.data.playerId != null
+            && 'playerId' in request.resource.data
             && request.resource.data.playerId == resource.data.playerId
+          )
+          || (
+            (!('playerId' in resource.data) || resource.data.playerId == null)
+            && (
+              !('playerId' in request.resource.data)
+              || request.resource.data.playerId == null
+              || claimOwner(request.resource.data.playerId) == request.auth.uid
+            )
           )
         );
     }
@@ -61,7 +82,8 @@ service cloud.firestore {
     match /matches/{matchId} {
       allow read, write: if signedIn();
 
-      // One rating card per person, and you may not appear on your own.
+      // You must have said who you are before you may rate at all, and you
+      // may never appear on your own card.
       match /votes/{userId} {
         allow read: if signedIn();
 
@@ -69,10 +91,8 @@ service cloud.firestore {
           && request.auth.uid == userId
           && request.resource.data.voterName is string
           && request.resource.data.scores is map
-          && (
-            !hasClaim(userId)
-            || !(profileData(userId).playerId in request.resource.data.scores.keys())
-          );
+          && hasClaim(userId)
+          && !(profileData(userId).playerId in request.resource.data.scores.keys());
 
         allow delete: if false;
       }

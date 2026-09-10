@@ -6,6 +6,9 @@
   let name = $state('');
   let position = $state('MID');
   let openMenu = $state(null);
+  /* Deleting a player is irreversible and wipes them from every past
+     team sheet, so it always takes a second tap. */
+  let confirmingRemove = $state(null);
 
   const initials = (full) =>
     full.split(' ').filter(Boolean).slice(0, 2).map((w) => w[0].toUpperCase()).join('');
@@ -19,7 +22,7 @@
     name = '';
   }
 
-  const act = (fn) => { fn(); openMenu = null; };
+  const act = (fn) => { fn(); openMenu = null; confirmingRemove = null; };
 
   let grouped = $derived(
     POSITIONS.map((pos) => ({ pos, list: app.players.filter((p) => (p.position || 'MID') === pos) }))
@@ -28,8 +31,8 @@
 </script>
 
 <svelte:window
-  onclick={() => (openMenu = null)}
-  onkeydown={(e) => e.key === 'Escape' && (openMenu = null)}
+  onclick={() => { openMenu = null; confirmingRemove = null; }}
+  onkeydown={(e) => e.key === 'Escape' && (openMenu = null, confirmingRemove = null)}
 />
 
 <div class="page-head">
@@ -110,9 +113,22 @@
                   >
                     {player.active === false ? 'Mark as available' : 'Mark as unavailable'}
                   </button>
-                  <button role="menuitem" class="danger" onclick={() => act(() => removePlayer(player.id))}>
-                    Remove from squad
-                  </button>
+                  {#if confirmingRemove === player.id}
+                    <button
+                      role="menuitem"
+                      class="danger"
+                      onclick={() => act(() => removePlayer(player.id))}
+                    >Yes, remove {player.name.split(' ')[0]}</button>
+                    <button role="menuitem" onclick={(e) => { e.stopPropagation(); confirmingRemove = null; }}>
+                      Keep them
+                    </button>
+                  {:else}
+                    <button
+                      role="menuitem"
+                      class="danger"
+                      onclick={(e) => { e.stopPropagation(); confirmingRemove = player.id; }}
+                    >Remove from squad</button>
+                  {/if}
                 </div>
               {/if}
             </span>

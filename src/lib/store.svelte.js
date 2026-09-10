@@ -78,12 +78,18 @@ export async function saveName(raw) {
 
 /** Link this device to a roster player. `null` means "I do not play", which
  *  is still an answer, so we store it rather than asking again. */
+/** Claiming is one-way: once you say which player you are, it is fixed.
+ *  Otherwise switching identity is a one-tap route to rating yourself.
+ *  Answering "not on the list" stores null and can be set later, which
+ *  only ever narrows what you may rate. */
 export async function claimPlayer(playerId) {
-  // `undefined` means "ask me again", used by the change button.
+  // `undefined` reopens the picker, only reachable while unclaimed.
   if (playerId === undefined) {
+    if (app.meId) return say('Who you are is locked. Ask an organiser to change it.');
     app.needsClaim = true;
     return;
   }
+  if (app.meId) return say('Who you are is locked.');
   try {
     await setDoc(
       doc(db, 'profiles', app.uid),

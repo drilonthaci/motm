@@ -36,13 +36,13 @@
   <h1>Squad</h1>
   <div class="row" style="gap:10px">
     <span class="label">{app.players.length} {app.players.length === 1 ? 'player' : 'players'}</span>
-    <button class="btn sm" onclick={() => claimPlayer(undefined)} title="Change which player you are">
-      {#if app.meId}
+    {#if app.meId}
+      <span class="you-chip" title="Locked so nobody can switch identity to rate themselves">
         You: {app.players.find((p) => p.id === app.meId)?.name ?? 'unknown'}
-      {:else}
-        Set who you are
-      {/if}
-    </button>
+      </span>
+    {:else}
+      <button class="btn sm" onclick={() => claimPlayer(undefined)}>Set who you are</button>
+    {/if}
   </div>
 </div>
 

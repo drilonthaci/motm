@@ -3,37 +3,77 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    match /profiles/{userId} {
-      allow read: if request.auth != null;
-      allow create, update: if request.auth != null
-        && request.auth.uid == userId
-        && request.resource.data.displayName is string
-        && request.resource.data.displayName.size() >= 2
-        && request.resource.data.displayName.size() <= 40;
+    function signedIn() {
+      return request.auth != null;
     }
 
-    // Shared roster of colleagues. Anyone signed in can maintain it, same
-    // trust model as matches, we just check the shape so a bad client
-    // cannot write a roster entry the UI chokes on.
+    function profileData(userId) {
+      return get(/databases/$(database)/documents/profiles/$(userId)).data;
+    }
+
+    // Has this profile claimed a roster player?
+    function hasClaim(userId) {
+      return exists(/databases/$(database)/documents/profiles/$(userId))
+        && 'playerId' in profileData(userId)
+        && profileData(userId).playerId != null;
+    }
+
+    function validName(d) {
+      return d.displayName is string
+        && d.displayName.size() >= 2
+        && d.displayName.size() <= 40;
+    }
+
+    match /profiles/{userId} {
+      allow read: if signedIn();
+
+      allow create: if signedIn()
+        && request.auth.uid == userId
+        && validName(request.resource.data);
+
+      // playerId is write-once. Unset or null may become a real player,
+      // because that only ever narrows what you are allowed to rate.
+      // Changing or clearing an existing claim is refused, since switching
+      // identity would be a one-tap route to rating yourself.
+      allow update: if signedIn()
+        && request.auth.uid == userId
+        && validName(request.resource.data)
+        && (
+          !('playerId' in resource.data)
+          || resource.data.playerId == null
+          || (
+            'playerId' in request.resource.data
+            && request.resource.data.playerId == resource.data.playerId
+          )
+        );
+    }
+
     match /players/{playerId} {
-      allow read: if request.auth != null;
-      allow create, update: if request.auth != null
+      allow read: if signedIn();
+      allow create, update: if signedIn()
         && request.resource.data.name is string
         && request.resource.data.name.size() >= 2
         && request.resource.data.name.size() <= 60
         && request.resource.data.position in ['GK', 'DEF', 'MID', 'FWD'];
-      allow delete: if request.auth != null;
+      allow delete: if signedIn();
     }
 
     match /matches/{matchId} {
-      allow read, write: if request.auth != null;
+      allow read, write: if signedIn();
 
-      // One rating card per person, and only your own.
+      // One rating card per person, and you may not appear on your own.
       match /votes/{userId} {
-        allow read: if request.auth != null;
-        allow create, update: if request.auth != null
+        allow read: if signedIn();
+
+        allow create, update: if signedIn()
           && request.auth.uid == userId
-          && request.resource.data.voterName is string;
+          && request.resource.data.voterName is string
+          && request.resource.data.scores is map
+          && (
+            !hasClaim(userId)
+            || !(profileData(userId).playerId in request.resource.data.scores.keys())
+          );
+
         allow delete: if false;
       }
     }

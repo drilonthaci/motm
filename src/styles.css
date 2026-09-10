@@ -3120,3 +3120,16 @@ body.scroll-locked {
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
 }
+
+/* Identity is locked once claimed, so it reads as a fact, not a control. */
+.you-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 7px 13px;
+  border-radius: 999px;
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-2);
+}

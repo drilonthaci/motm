@@ -1,4 +1,5 @@
 <script>
+  import { lockScroll } from './lib/scrollLock.js';
   import { app, start, saveName } from './lib/store.svelte.js';
   import { route } from './lib/router.svelte.js';
   import Matches from './views/Matches.svelte';
@@ -21,6 +22,8 @@
   ];
 
   const initials = (n) => n.split(' ').filter(Boolean).slice(0, 2).map((w) => w[0].toUpperCase()).join('');
+
+  $effect(() => (app.needsName && !app.fatal) ? lockScroll() : undefined);
 </script>
 
 <header class="topbar">
@@ -79,7 +82,15 @@
         It sits next to your ratings so people know whose card is whose. No password, no account.
       </p>
       <label class="field"><span>First and last name</span>
-        <input bind:value={nameDraft} maxlength="40" placeholder="Your name" />
+        <input
+          bind:value={nameDraft}
+          maxlength="40"
+          placeholder="Your name"
+          autocapitalize="words"
+          autocorrect="off"
+          spellcheck="false"
+          enterkeyhint="done"
+        />
       </label>
       <button class="btn primary" style="margin-top:16px; width:100%; justify-content:center" type="submit">
         Continue

@@ -1,4 +1,5 @@
 <script>
+  import { lockScroll } from '../lib/scrollLock.js';
   import Crest from '../lib/Crest.svelte';
   import Icon from '../lib/Icon.svelte';
   import { scoreOf, isPlayed, seasonTable, ratingColor, sideOfPlayer, motmOf } from '../lib/model.js';
@@ -79,6 +80,8 @@
       go(`/match/${id}`);
     }
   }
+
+  $effect(() => (creating) ? lockScroll() : undefined);
 </script>
 
 <div class="page-head">
@@ -211,8 +214,8 @@
         <input bind:value={form.venue} placeholder="Sports Arena · Pitch 2" />
       </label>
       <div class="grid-2" style="gap:12px; margin-top:12px">
-        <label class="field"><span>Home squad (black)</span><input bind:value={form.homeName} required /></label>
-        <label class="field"><span>Away squad (white)</span><input bind:value={form.awayName} required /></label>
+        <label class="field"><span>Home squad (black)</span><input bind:value={form.homeName} autocapitalize="words" autocorrect="off" required /></label>
+        <label class="field"><span>Away squad (white)</span><input bind:value={form.awayName} autocapitalize="words" autocorrect="off" required /></label>
       </div>
 
       <div class="row" style="margin-top:20px">

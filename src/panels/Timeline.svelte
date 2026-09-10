@@ -133,7 +133,7 @@
         <div class="addbar">
           <label class="field f-min">
             <span>Minute</span>
-            <input type="number" min="0" max="200" bind:value={minute} placeholder="optional" />
+            <input type="number" inputmode="numeric" min="0" max="200" bind:value={minute} placeholder="optional" />
           </label>
           <button class="btn primary" onclick={addGoal}>
             Add goal for {teamName(scorerSide)}
@@ -167,7 +167,7 @@
         </label>
         <label class="field f-min">
           <span>Minute</span>
-          <input type="number" min="0" max="200" bind:value={otherMinute} placeholder="optional" />
+          <input type="number" inputmode="numeric" min="0" max="200" bind:value={otherMinute} placeholder="optional" />
         </label>
         <button class="btn f-add" onclick={addOther}>Add</button>
       </div>

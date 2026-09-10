@@ -1,4 +1,5 @@
 <script>
+  import { lockScroll } from '../lib/scrollLock.js';
   import Crest from '../lib/Crest.svelte';
   import { scoreOf, derivedScore, scoreConflict, allSquad, ratingSummary, manOfTheMatch, ratingColor } from '../lib/model.js';
   import { app, patchMatch, deleteMatch, watchCards } from '../lib/store.svelte.js';
@@ -70,6 +71,8 @@
     { id: 'timeline', label: 'Timeline' },
     { id: 'ratings', label: 'Ratings' }
   ];
+
+  $effect(() => (editing || editingScore) ? lockScroll() : undefined);
 </script>
 
 {#if !match}
@@ -184,12 +187,12 @@
       <div class="score-edit">
         <label class="field">
           <span>{match.teamA?.name || 'Blacks'}</span>
-          <input type="number" min="0" bind:value={draftA} />
+          <input type="number" inputmode="numeric" min="0" bind:value={draftA} />
         </label>
         <em>-</em>
         <label class="field">
           <span>{match.teamB?.name || 'Whites'}</span>
-          <input type="number" min="0" bind:value={draftB} />
+          <input type="number" inputmode="numeric" min="0" bind:value={draftB} />
         </label>
       </div>
 

@@ -1,0 +1,16 @@
+{
+  "name": "MOTM · Gjirafa Mini Football",
+  "short_name": "MOTM",
+  "description": "Match tracker for the Gjirafa company 5+1 league: lineups, goals, ratings and player of the match.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0b0c0d",
+  "theme_color": "#0b0c0d",
+  "icons": [
+    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

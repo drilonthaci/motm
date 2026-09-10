@@ -88,7 +88,15 @@
     <div class="card-head"><h2>Add a player</h2></div>
     <div class="card-body">
       <label class="field"><span>Full name</span>
-        <input bind:value={name} placeholder="Player name" required />
+        <input
+          bind:value={name}
+          placeholder="Player name"
+          autocapitalize="words"
+          autocorrect="off"
+          spellcheck="false"
+          enterkeyhint="done"
+          required
+        />
       </label>
       <label class="field" style="margin-top:12px"><span>Usual position</span>
         <select bind:value={position}>{#each POSITIONS as p}<option value={p}>{p}</option>{/each}</select>

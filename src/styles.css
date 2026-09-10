@@ -2662,3 +2662,106 @@ table.tbl tbody tr:hover {
 /* With one rail there is no left/right cue for which squad an event
    belongs to, so every entry carries its crest. */
 .tl-item .crest2 { flex: none; }
+
+/* ============================================================
+   Native-app behaviours
+   ============================================================ */
+
+/* iOS zooms in on any focused control whose font-size is under 16px, and
+   never zooms back out. Every text-entry control is therefore 16px on
+   touch-sized screens. Buttons are exempt: they never trigger it. */
+@media (max-width: 820px) {
+  .field input,
+  .field select,
+  .field textarea,
+  .pos-select,
+  input[type='text'],
+  input[type='number'],
+  input[type='date'],
+  input[type='time'],
+  select,
+  textarea {
+    font-size: 16px;
+  }
+
+  /* Keep the compact controls compact despite the larger type. */
+  .pos-select { min-width: 74px; padding: 6px 24px 6px 10px; }
+  .field input,
+  .field select { padding: 11px 12px; }
+  .field select { padding-right: 32px; }
+}
+
+/* No 300ms tap delay and no double-tap-to-zoom on controls. */
+a,
+button,
+select,
+summary,
+input[type='range'],
+.fxcard,
+.mvp,
+.prow,
+.chips button {
+  touch-action: manipulation;
+}
+
+/* Kill the grey flash iOS paints over tapped elements. */
+html {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Notch and home-indicator safe areas. */
+.topbar-inner {
+  padding-left: max(18px, env(safe-area-inset-left));
+  padding-right: max(18px, env(safe-area-inset-right));
+}
+
+.shell {
+  padding-left: max(18px, env(safe-area-inset-left));
+  padding-right: max(18px, env(safe-area-inset-right));
+  padding-bottom: calc(80px + env(safe-area-inset-bottom));
+}
+
+.toast {
+  bottom: calc(22px + env(safe-area-inset-bottom));
+}
+
+@media (max-width: 620px) {
+  .topbar-inner {
+    padding-left: max(14px, env(safe-area-inset-left));
+    padding-right: max(14px, env(safe-area-inset-right));
+  }
+  .shell {
+    padding-left: max(14px, env(safe-area-inset-left));
+    padding-right: max(14px, env(safe-area-inset-right));
+    padding-bottom: calc(72px + env(safe-area-inset-bottom));
+  }
+  .toast {
+    bottom: calc(16px + env(safe-area-inset-bottom));
+  }
+}
+
+/* Rubber-band overscroll should not reveal a white gutter. */
+html,
+body {
+  overscroll-behavior-y: none;
+  background: var(--bg);
+}
+
+/* Body is frozen while a dialog is open, so the page behind cannot scroll. */
+body.scroll-locked {
+  position: fixed;
+  width: 100%;
+  overflow: hidden;
+}
+
+/* Dialogs get their own scroll and respect the safe area. */
+.backdrop {
+  padding: max(18px, env(safe-area-inset-top)) 18px calc(18px + env(safe-area-inset-bottom));
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Visible focus for keyboard users, suppressed for pointer taps. */
+:focus-visible {
+  outline: 2px solid var(--lime);
+  outline-offset: 2px;
+}

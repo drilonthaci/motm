@@ -2450,10 +2450,7 @@ table.tbl tbody tr:hover {
 
   /* A cut-off surname is worse than two lines - let names wrap everywhere
      they are the primary content of their row. */
-  .tl-item .txt b,
-  .lrow .nm,
-  .statrow .nm,
-  .rrow .nm {
+  .tl-item .txt b {
     white-space: normal;
     overflow: visible;
     text-overflow: clip;
@@ -2764,4 +2761,333 @@ body.scroll-locked {
 :focus-visible {
   outline: 2px solid var(--lime);
   outline-offset: 2px;
+}
+
+/* ============================================================
+   Roster row
+   Two lines by construction, not by wrapping: the name owns line
+   one, everything else sits on line two, and the only control is a
+   menu. Nothing competes for the name's width, so it neither wraps
+   nor overflows.
+   ============================================================ */
+
+.rp {
+  display: grid;
+  grid-template-columns: 36px minmax(0, 1fr) auto;
+  grid-template-areas:
+    'av name opts'
+    'av meta opts';
+  align-items: center;
+  column-gap: 12px;
+  row-gap: 3px;
+  padding: 11px 16px;
+  border-bottom: 1px solid var(--line);
+}
+.rp:last-child { border-bottom: 0; }
+.rp:hover { background: var(--surface-2); }
+
+.rp .pav { grid-area: av; }
+.rp:hover .pav { border-color: var(--text-3); color: var(--text); }
+
+.rp-name {
+  grid-area: name;
+  min-width: 0;
+  font-size: 14.5px;
+  font-weight: 600;
+  line-height: 1.25;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.rp-meta {
+  grid-area: meta;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.rp-pos {
+  flex: none;
+  font-style: normal;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .06em;
+  color: var(--text-2);
+  background: var(--surface-3);
+  border-radius: 4px;
+  padding: 2px 6px;
+}
+
+/* The stats line is the one thing allowed to clip, since it is the
+   least important text in the row. */
+.rp-stats {
+  min-width: 0;
+  flex: 1;
+  font-size: 11.5px;
+  font-weight: 500;
+  color: var(--text-3);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.rp-meta .rating {
+  flex: none;
+  min-width: 38px;
+  height: 19px;
+  font-size: 11.5px;
+}
+
+.rp-actions {
+  grid-area: opts;
+  position: relative;
+  justify-self: end;
+}
+
+.rp.inactive .pav,
+.rp.inactive .rp-name,
+.rp.inactive .rp-meta { opacity: .45; }
+
+/* Position picker inside the row menu. */
+.rowmenu-label {
+  margin: 4px 8px 6px;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: .07em;
+  text-transform: uppercase;
+  color: var(--text-3);
+}
+
+.menu-pos {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 4px;
+  padding: 0 5px 2px;
+}
+.menu-pos button {
+  padding: 8px 0;
+  text-align: center;
+  border-radius: 7px;
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+  color: var(--text-2);
+  font-size: 11.5px;
+  font-weight: 700;
+}
+.menu-pos button:hover { border-color: var(--text-3); color: var(--text); background: var(--surface-2); }
+.menu-pos button.on {
+  background: var(--lime);
+  border-color: var(--lime);
+  color: var(--lime-ink);
+}
+
+.rowmenu-rule {
+  border: 0;
+  border-top: 1px solid var(--line);
+  margin: 6px 5px;
+}
+
+@media (max-width: 620px) {
+  .rp { padding: 11px 13px; column-gap: 10px; }
+  .rp-name { font-size: 14px; }
+}
+
+/* ============================================================
+   Season
+   ============================================================ */
+
+/* One hairline-divided strip instead of a row of near-empty boxes. */
+.statstrip {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+  overflow: hidden;
+}
+.statstrip > div {
+  display: grid;
+  gap: 3px;
+  justify-items: center;
+  padding: 14px 6px 15px;
+  border-left: 1px solid var(--line);
+}
+.statstrip > div:first-child { border-left: 0; }
+.statstrip small {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  color: var(--text-3);
+}
+.statstrip b {
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: -.03em;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Leaderboards: the leader gets a card of their own, the chasing pack
+   is a compact list underneath. */
+.lb {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+  overflow: hidden;
+}
+
+.lb-head {
+  padding: 13px 16px 12px;
+  border-bottom: 1px solid var(--line);
+}
+.lb-head h2 {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--text-2);
+  white-space: nowrap;
+}
+
+.lb-lead {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  background:
+    radial-gradient(120% 130% at 0% 0%, rgba(182, 236, 46, .13) 0%, transparent 62%),
+    transparent;
+  border-bottom: 1px solid var(--line);
+}
+.lb-av {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  flex: none;
+  display: grid;
+  place-content: center;
+  background: var(--lime);
+  color: var(--lime-ink);
+  font-size: 13px;
+  font-weight: 800;
+}
+.lb-who { display: grid; gap: 1px; min-width: 0; flex: 1; }
+.lb-who b {
+  font-size: 15.5px;
+  font-weight: 700;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.lb-who small { font-size: 11.5px; color: var(--text-3); }
+.lb-big {
+  flex: none;
+  font-size: 27px;
+  font-weight: 800;
+  letter-spacing: -.03em;
+  font-variant-numeric: tabular-nums;
+  color: var(--lime);
+}
+
+.lb-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 9px 16px;
+  border-bottom: 1px solid var(--line);
+}
+.lb-row:last-child { border-bottom: 0; }
+.lb-row:hover { background: var(--surface-2); }
+.lb-rk {
+  width: 14px;
+  flex: none;
+  font-size: 11.5px;
+  font-weight: 700;
+  color: var(--text-3);
+  font-variant-numeric: tabular-nums;
+}
+.lb-nm {
+  flex: 1;
+  min-width: 0;
+  font-size: 13.5px;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.lb-val {
+  flex: none;
+  font-size: 15px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.lb-empty {
+  margin: 0;
+  padding: 22px 16px;
+  font-size: 13px;
+  color: var(--text-3);
+  text-align: center;
+}
+
+@media (max-width: 620px) {
+  .statstrip { grid-template-columns: repeat(3, 1fr); }
+  .statstrip > div:nth-child(4) { border-left: 0; }
+  .statstrip > div:nth-child(n + 4) { border-top: 1px solid var(--line); }
+  .statstrip b { font-size: 20px; }
+}
+
+/* ============================================================
+   Dense list rows never wrap
+   .statrow .nm guarantee: the name is given enough width that real
+   names fit on one line, with ellipsis only as a last resort.
+   ============================================================ */
+
+.statrow .nm,
+.rrow .nm {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.statrow .nm small,
+.rrow .nm small {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+@media (max-width: 620px) {
+  /* Drop the rank column and tighten the figures, which buys the name
+     roughly 50px: enough for a double-barrelled surname. */
+  .statrow { grid-template-columns: minmax(0, 1fr) 28px 28px 40px 44px; gap: 5px; }
+  .statrow .rk { display: none; }
+  .statrow .who { gap: 0; }
+  .statrow .nm { font-size: 13.5px; }
+  .statrow .nm small { font-size: 10.5px; }
+  .statrow .v { font-size: 15px; }
+  .statrow .v .rating { min-width: 34px; font-size: 11px; }
+  .statrow.head { font-size: 9.5px; letter-spacing: .02em; }
+}
+
+/* On very narrow phones every pixel of name width is bought back from
+   the chrome around it. */
+@media (max-width: 360px) {
+  .rp {
+    grid-template-columns: 32px minmax(0, 1fr) auto;
+    column-gap: 9px;
+    padding: 10px 11px;
+  }
+  .rp .pav { width: 32px; height: 32px; font-size: 11px; }
+  .rp-name { font-size: 13.5px; }
+  .rp-meta { gap: 6px; }
+  .rp-stats { font-size: 11px; }
+  .rp-meta .rating { min-width: 34px; font-size: 11px; }
+  .rowmenu-btn { padding: 7px 10px; font-size: 11.5px; }
+
+  .statrow { grid-template-columns: minmax(0, 1fr) 26px 26px 36px 40px; gap: 4px; padding: 10px 11px; }
+  .statrow .nm { font-size: 13px; }
+  .statrow .v { font-size: 14px; }
+  .statrow .v .rating { min-width: 32px; }
 }

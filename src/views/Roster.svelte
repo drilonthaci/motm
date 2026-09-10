@@ -1,11 +1,11 @@
 <script>
-  import Icon from '../lib/Icon.svelte';
   import { POSITIONS, seasonTable, ratingColor } from '../lib/model.js';
   import { app, addPlayer, updatePlayer, removePlayer } from '../lib/store.svelte.js';
+  import Icon from '../lib/Icon.svelte';
 
   let name = $state('');
   let position = $state('MID');
-  let confirming = $state(null);
+  let openMenu = $state(null);
 
   const initials = (full) =>
     full.split(' ').filter(Boolean).slice(0, 2).map((w) => w[0].toUpperCase()).join('');
@@ -19,11 +19,18 @@
     name = '';
   }
 
+  const act = (fn) => { fn(); openMenu = null; };
+
   let grouped = $derived(
     POSITIONS.map((pos) => ({ pos, list: app.players.filter((p) => (p.position || 'MID') === pos) }))
       .filter((g) => g.list.length)
   );
 </script>
+
+<svelte:window
+  onclick={() => (openMenu = null)}
+  onkeydown={(e) => e.key === 'Escape' && (openMenu = null)}
+/>
 
 <div class="page-head">
   <h1>Squad</h1>
@@ -37,7 +44,7 @@
         <div class="emptystate">
           <div class="ico"><Icon name="player" /></div>
           <h3>Nobody on the books</h3>
-          <p>Add everyone who turns up. You do this once - after that they are pickable in every match.</p>
+          <p>Add everyone who turns up. You do this once, then they are pickable in every match.</p>
         </div>
       </div>
     {/if}
@@ -47,35 +54,57 @@
       <div class="card">
         {#each group.list as player (player.id)}
           {@const s = statFor(player.id)}
-          <div class="prow" class:inactive={player.active === false}>
+          <div class="rp" class:inactive={player.active === false}>
             <span class="pav">{initials(player.name)}</span>
-            <span class="nm">
-              {player.name}
-              <small>
-                {s ? `${s.apps} ${s.apps === 1 ? 'app' : 'apps'} · ${s.goals} G · ${s.assists} A` : 'No matches yet'}
-              </small>
-            </span>
-            {#if s?.rating}
-              <span class="rating" style="background:{ratingColor(s.rating)}">{s.rating.toFixed(1)}</span>
-            {/if}
-            <span class="prow-actions">
-              <select
-                class="pos-select"
-                aria-label="Position"
-                value={player.position || 'MID'}
-                onchange={(e) => updatePlayer(player.id, { position: e.currentTarget.value })}>
-                {#each POSITIONS as p}<option value={p}>{p}</option>{/each}
-              </select>
-              <button
-                class="avail"
-                class:out={player.active === false}
-                onclick={() => updatePlayer(player.id, { active: player.active === false })}
-                title={player.active === false ? 'Unavailable, tap to bring back in' : 'Available, tap to mark out'}
->{player.active === false ? 'Out' : 'In'}</button>
-              {#if confirming === player.id}
-                <button class="btn sm danger" onclick={() => { removePlayer(player.id); confirming = null; }}>Sure?</button>
+
+            <span class="rp-name">{player.name}</span>
+
+            <span class="rp-meta">
+              <i class="rp-pos">{player.position || 'MID'}</i>
+              <span class="rp-stats">
+                {#if s}
+                  {s.apps} {s.apps === 1 ? 'app' : 'apps'} · {s.goals} G · {s.assists} A
+                {:else}
+                  No matches yet
+                {/if}
+              </span>
+              {#if s?.rating}
+                <span class="rating" style="background:{ratingColor(s.rating)}">{s.rating.toFixed(1)}</span>
               {:else}
-                <button class="x" onclick={() => (confirming = player.id)} aria-label="Remove">×</button>
+                <span class="rating none">-</span>
+              {/if}
+            </span>
+
+            <span class="rp-actions">
+              <button
+                class="rowmenu-btn"
+                aria-label="Options for {player.name}"
+                aria-expanded={openMenu === player.id}
+                onclick={(e) => { e.stopPropagation(); openMenu = openMenu === player.id ? null : player.id; }}
+              >Options</button>
+
+              {#if openMenu === player.id}
+                <div class="rowmenu" role="menu">
+                  <p class="rowmenu-label">Position</p>
+                  <div class="menu-pos">
+                    {#each POSITIONS as p}
+                      <button
+                        class:on={(player.position || 'MID') === p}
+                        onclick={() => act(() => updatePlayer(player.id, { position: p }))}
+                      >{p}</button>
+                    {/each}
+                  </div>
+                  <hr class="rowmenu-rule" />
+                  <button
+                    role="menuitem"
+                    onclick={() => act(() => updatePlayer(player.id, { active: player.active === false }))}
+                  >
+                    {player.active === false ? 'Mark as available' : 'Mark as unavailable'}
+                  </button>
+                  <button role="menuitem" class="danger" onclick={() => act(() => removePlayer(player.id))}>
+                    Remove from squad
+                  </button>
+                </div>
               {/if}
             </span>
           </div>
@@ -105,7 +134,7 @@
         Add to squad
       </button>
       <p class="muted" style="font-size:12.5px; margin:12px 0 0">
-        Position is only the default when you name them - you can move anyone anywhere on the team sheet.
+        Position is only the default when you name them. You can move anyone anywhere on the team sheet.
       </p>
     </div>
   </form>

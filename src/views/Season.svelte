@@ -1,30 +1,54 @@
 <script>
-  import Icon from '../lib/Icon.svelte';
   import { seasonTable, headToHead, isPlayed, scoreOf, ratingColor, leaderboard } from '../lib/model.js';
   import { app } from '../lib/store.svelte.js';
+  import Icon from '../lib/Icon.svelte';
 
   let rows = $derived(seasonTable(app.matches, app.players));
   let h2h = $derived(headToHead(app.matches));
   let played = $derived(app.matches.filter(isPlayed));
   let totalGoals = $derived(played.reduce((n, m) => { const s = scoreOf(m); return n + s.a + s.b; }, 0));
 
-  let charts = $derived([
-    { key: 'goals', title: 'Top scorers', unit: 'goals', rows: leaderboard(rows, 'goals') },
-    { key: 'assists', title: 'Top assists', unit: 'assists', rows: leaderboard(rows, 'assists') }
-  ]);
+  const initials = (full) =>
+    full.split(' ').filter(Boolean).slice(0, 2).map((w) => w[0].toUpperCase()).join('');
 
-  /* Best average rating across the season, most-rated player breaking ties. */
+  /* Best average rating, most-rated player breaking ties. */
   let topRated = $derived(
     rows
       .filter((r) => r.rating != null)
       .sort((x, y) => y.rating - x.rating || y.ratingCount - x.ratingCount)
       .slice(0, 5)
   );
+
+  let charts = $derived([
+    {
+      key: 'goals',
+      title: 'Top scorers',
+      unit: 'goals',
+      suffix: (r) => `${r.apps} ${r.apps === 1 ? 'app' : 'apps'}`,
+      rows: leaderboard(rows, 'goals'),
+      value: (r) => r.goals
+    },
+    {
+      key: 'assists',
+      title: 'Top assists',
+      unit: 'assists',
+      suffix: (r) => `${r.apps} ${r.apps === 1 ? 'app' : 'apps'}`,
+      rows: leaderboard(rows, 'assists'),
+      value: (r) => r.assists
+    },
+    {
+      key: 'rating',
+      title: 'Top rated',
+      unit: 'ratings',
+      suffix: (r) => `${r.ratingCount} ${r.ratingCount === 1 ? 'vote' : 'votes'}`,
+      rows: topRated,
+      value: (r) => r.rating.toFixed(1)
+    }
+  ]);
 </script>
 
 <div class="page-head">
   <h1>Season</h1>
-  <span class="label">{played.length} played · {totalGoals} goals</span>
 </div>
 
 {#if !played.length}
@@ -32,63 +56,50 @@
     <div class="emptystate">
       <div class="ico"><Icon name="chart" /></div>
       <h3>Nothing to count yet</h3>
-      <p>Mark a match as full time and it starts feeding this table.</p>
+      <p>Mark a match as full time and it starts feeding these tables.</p>
     </div>
   </div>
 {:else}
-  <div class="grid-3">
-    <div class="stat-tile"><span class="label">Matches</span><b>{h2h.played}</b></div>
-    <div class="stat-tile"><span class="label">Goals / match</span><b>{(totalGoals / played.length).toFixed(1)}</b></div>
-    <div class="stat-tile"><span class="label">B / D / W</span><b>{h2h.aWins}·{h2h.draws}·{h2h.bWins}</b></div>
+  <div class="statstrip">
+    <div><small>Matches</small><b>{h2h.played}</b></div>
+    <div><small>Goals</small><b>{totalGoals}</b></div>
+    <div><small>Per match</small><b>{(totalGoals / played.length).toFixed(1)}</b></div>
+    <div><small>Blacks</small><b>{h2h.aWins}</b></div>
+    <div><small>Draws</small><b>{h2h.draws}</b></div>
+    <div><small>Whites</small><b>{h2h.bWins}</b></div>
   </div>
 
   <div class="chartgrid">
     {#each charts as chart (chart.key)}
-      {@const top = chart.rows[0]?.[chart.key] ?? 1}
-      <section class="card">
-        <div class="card-head">
+      {@const lead = chart.rows[0]}
+      {@const rest = chart.rows.slice(1)}
+      <section class="lb">
+        <div class="lb-head">
           <h2>{chart.title}</h2>
-          <span class="label">Season</span>
         </div>
-        {#each chart.rows as r, i (r.id)}
-          <div class="lrow">
-            <span class="rk">{i + 1}</span>
-            <span class="nm">
-              {r.name}
-              <small>{r.apps} {r.apps === 1 ? 'app' : 'apps'}</small>
+
+        {#if lead}
+          <div class="lb-lead">
+            <span class="lb-av">{initials(lead.name)}</span>
+            <span class="lb-who">
+              <b>{lead.name}</b>
+              <small>{chart.suffix(lead)}</small>
             </span>
-            <span class="tot">{r[chart.key]}</span>
-            <span class="lbar"><i style="width:{(r[chart.key] / top) * 100}%"></i></span>
+            <span class="lb-big">{chart.value(lead)}</span>
           </div>
+
+          {#each rest as r, i (r.id)}
+            <div class="lb-row">
+              <span class="lb-rk">{i + 2}</span>
+              <span class="lb-nm">{r.name}</span>
+              <span class="lb-val">{chart.value(r)}</span>
+            </div>
+          {/each}
         {:else}
-          <p class="muted" style="padding:16px; margin:0; font-size:13px">
-            No {chart.unit} logged yet. Add them under a match's Timeline tab.
-          </p>
-        {/each}
+          <p class="lb-empty">No {chart.unit} recorded yet.</p>
+        {/if}
       </section>
     {/each}
-
-    <section class="card">
-      <div class="card-head">
-        <h2>Top rated</h2>
-        <span class="label">Average</span>
-      </div>
-      {#each topRated as r, i (r.id)}
-        <div class="lrow">
-          <span class="rk">{i + 1}</span>
-          <span class="nm">
-            {r.name}
-            <small>{r.ratingCount} {r.ratingCount === 1 ? 'vote' : 'votes'} · {r.apps} {r.apps === 1 ? 'app' : 'apps'}</small>
-          </span>
-          <span class="rating" style="background:{ratingColor(r.rating)}">{r.rating.toFixed(1)}</span>
-          <span class="lbar"><i style="width:{(r.rating / 10) * 100}%; background:{ratingColor(r.rating)}"></i></span>
-        </div>
-      {:else}
-        <p class="muted" style="padding:16px; margin:0; font-size:13px">
-          Nobody rated yet. Open a match and submit a rating card.
-        </p>
-      {/each}
-    </section>
   </div>
 
   <div class="section-head">

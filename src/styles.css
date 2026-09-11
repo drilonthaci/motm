@@ -3133,37 +3133,3 @@ body.scroll-locked {
   font-weight: 600;
   color: var(--text-2);
 }
-
-/* ---------- who rated ---------- */
-
-.voters {
-  padding: 13px 16px 15px;
-  border-top: 1px solid var(--line);
-}
-.voters .label { margin-bottom: 8px; }
-
-.voter-chips {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-}
-.voter {
-  padding: 5px 11px;
-  border-radius: 999px;
-  background: var(--surface-2);
-  border: 1px solid var(--line);
-  font-size: 12.5px;
-  font-weight: 600;
-  color: var(--text-2);
-}
-.voter.mine {
-  background: var(--lime);
-  border-color: var(--lime);
-  color: var(--lime-ink);
-}
-
-.voters-note {
-  margin: 10px 0 0;
-  font-size: 11.5px;
-  color: var(--text-3);
-}

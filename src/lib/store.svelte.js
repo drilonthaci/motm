@@ -1,4 +1,8 @@
-import { auth, db, signInAnonymously } from '../firebase.js';
+import { auth, db, googleProvider } from '../firebase.js';
+import {
+  onAuthStateChanged, signInWithPopup, signInWithRedirect,
+  getRedirectResult, signOut
+} from 'firebase/auth';
 import {
   collection, doc, onSnapshot, setDoc, updateDoc, deleteDoc,
   addDoc, getDocs, serverTimestamp, query, orderBy
@@ -7,6 +11,11 @@ import { ratingSummary, manOfTheMatch } from './model.js';
 
 export const app = $state({
   uid: null,
+  /** null until Firebase has told us whether anyone is signed in. */
+  authReady: false,
+  signingIn: false,
+  email: '',
+  photo: '',
   name: '',
   /** Which roster player this device belongs to, so you cannot rate yourself. */
   meId: null,
@@ -41,40 +50,124 @@ function blame(error, what) {
   }
 }
 
+/* Subscriptions live only while somebody is signed in, so signing out
+   stops them cleanly and signing back in does not stack duplicates. */
+let unsubscribers = [];
+
+function stopWatching() {
+  unsubscribers.forEach((fn) => fn());
+  unsubscribers = [];
+  app.players = [];
+  app.matches = [];
+  app.cards = [];
+  app.claims = {};
+  app.ready = false;
+}
+
+function watchEverything() {
+  unsubscribers.push(
+    onSnapshot(doc(db, 'profiles', app.uid), (snap) => {
+      const data = snap.data();
+      app.name = data?.displayName ?? app.name;
+      app.needsName = !data?.displayName;
+      app.meId = data?.playerId ?? null;
+      app.needsClaim = Boolean(data?.displayName) && data?.playerId === undefined;
+    }, (e) => blame(e, 'read your profile')),
+
+    onSnapshot(collection(db, 'claims'), (snap) => {
+      const map = {};
+      snap.docs.forEach((d) => (map[d.id] = d.data().uid));
+      app.claims = map;
+    }, (e) => blame(e, 'read the claim list')),
+
+    onSnapshot(query(collection(db, 'players'), orderBy('name')), (snap) => {
+      app.players = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+    }, (e) => blame(e, 'read the roster')),
+
+    onSnapshot(collection(db, 'matches'), (snap) => {
+      app.matches = snap.docs
+        .map((d) => ({ id: d.id, ...d.data() }))
+        .sort((x, y) => (y.date ?? '').localeCompare(x.date ?? '') || (y.time ?? '').localeCompare(x.time ?? ''));
+      app.ready = true;
+    }, (e) => { blame(e, 'read matches'); app.ready = true; })
+  );
+}
+
 export async function start() {
-  try {
-    const { user } = await signInAnonymously(auth);
+  // A redirect sign-in finishes here, on the way back from Google.
+  try { await getRedirectResult(auth); } catch (e) { blame(e, 'finish signing in'); }
+
+  onAuthStateChanged(auth, async (user) => {
+    stopWatching();
+    app.authReady = true;
+    app.signingIn = false;
+
+    if (!user) {
+      app.uid = null;
+      app.email = '';
+      app.photo = '';
+      app.name = '';
+      app.meId = null;
+      app.needsName = false;
+      app.needsClaim = false;
+      return;
+    }
+
     app.uid = user.uid;
+    app.email = user.email ?? '';
+    app.photo = user.photoURL ?? '';
+    app.name = user.displayName ?? '';
+
+    // Google already told us their name, so seed the profile and skip asking.
+    if (user.displayName) {
+      try {
+        await setDoc(
+          doc(db, 'profiles', user.uid),
+          { displayName: user.displayName.slice(0, 40), email: user.email ?? null, updatedAt: serverTimestamp() },
+          { merge: true }
+        );
+      } catch (e) { blame(e, 'save your profile'); }
+    }
+
+    watchEverything();
+  });
+}
+
+/** Popups are unreliable inside an installed PWA and in some mobile
+ *  browsers, so fall back to a full redirect when one is refused. */
+export async function signIn() {
+  app.signingIn = true;
+  const standalone =
+    window.matchMedia?.('(display-mode: standalone)')?.matches || window.navigator.standalone;
+
+  try {
+    if (standalone) {
+      await signInWithRedirect(auth, googleProvider);
+      return;
+    }
+    await signInWithPopup(auth, googleProvider);
   } catch (error) {
-    app.fatal = 'Anonymous sign-in is disabled on this Firebase project. Enable it under Authentication → Sign-in method.';
-    return;
+    const code = error?.code ?? '';
+    if (code === 'auth/popup-blocked' || code === 'auth/operation-not-supported-in-this-environment') {
+      try { return await signInWithRedirect(auth, googleProvider); } catch (e) { error = e; }
+    }
+    app.signingIn = false;
+    if (code === 'auth/popup-closed-by-user' || code === 'auth/cancelled-popup-request') return;
+    if (code === 'auth/unauthorized-domain') {
+      app.fatal = `This domain is not in the Firebase authorized list. Add ${location.hostname} under Authentication, Settings, Authorized domains.`;
+      return;
+    }
+    if (code === 'auth/operation-not-allowed') {
+      app.fatal = 'Google sign-in is not enabled on this Firebase project. Turn it on under Authentication, Sign-in method.';
+      return;
+    }
+    blame(error, 'sign you in');
   }
+}
 
-  onSnapshot(doc(db, 'profiles', app.uid), (snap) => {
-    const data = snap.data();
-    app.name = data?.displayName ?? '';
-    app.needsName = !data?.displayName;
-    app.meId = data?.playerId ?? null;
-    // Only ask who you are once a name exists and the roster has loaded.
-    app.needsClaim = Boolean(data?.displayName) && data?.playerId === undefined;
-  }, (e) => blame(e, 'read your profile'));
-
-  onSnapshot(collection(db, 'claims'), (snap) => {
-    const map = {};
-    snap.docs.forEach((d) => (map[d.id] = d.data().uid));
-    app.claims = map;
-  }, (e) => blame(e, 'read the claim list'));
-
-  onSnapshot(query(collection(db, 'players'), orderBy('name')), (snap) => {
-    app.players = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
-  }, (e) => blame(e, 'read the roster'));
-
-  onSnapshot(collection(db, 'matches'), (snap) => {
-    app.matches = snap.docs
-      .map((d) => ({ id: d.id, ...d.data() }))
-      .sort((x, y) => (y.date ?? '').localeCompare(x.date ?? '') || (y.time ?? '').localeCompare(x.time ?? ''));
-    app.ready = true;
-  }, (e) => { blame(e, 'read matches'); app.ready = true; });
+export async function signOutNow() {
+  try { await signOut(auth); say('Signed out.'); }
+  catch (e) { blame(e, 'sign you out'); }
 }
 
 export async function saveName(raw) {

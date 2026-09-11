@@ -3,8 +3,12 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
+    // A real Google account, not an anonymous session. Anonymous identities
+    // were free to create, which made every other guard here bypassable by
+    // opening a private window.
     function signedIn() {
-      return request.auth != null;
+      return request.auth != null
+        && request.auth.token.firebase.sign_in_provider == 'google.com';
     }
 
     function profileData(userId) {

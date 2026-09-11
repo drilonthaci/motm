@@ -1,5 +1,5 @@
 import { initializeApp } from 'firebase/app';
-import { getAuth, signInAnonymously } from 'firebase/auth';
+import { getAuth, GoogleAuthProvider } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
 
 const firebaseConfig = {
@@ -14,4 +14,8 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
 export const db = getFirestore(app);
-export { signInAnonymously };
+
+export const googleProvider = new GoogleAuthProvider();
+// Always offer the account chooser: people have work and personal accounts
+// and silently reusing the last one is how you end up claiming twice.
+googleProvider.setCustomParameters({ prompt: 'select_account' });

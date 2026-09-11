@@ -2,13 +2,15 @@ import { initializeApp } from 'firebase/app';
 import { getAuth, GoogleAuthProvider } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
 
-/* Google shows the authDomain in its sign-in dialog, so on the live site we
-   point it at our own hostname and let vercel.json proxy /__/auth through to
-   Firebase. Anywhere else (localhost, previews) falls back to the Firebase
-   domain, which has no proxy in front of it. */
+/* Google shows the authDomain in its sign-in dialog, so on our own domain we
+   point it at the current hostname and let vercel.json proxy /__/auth through
+   to Firebase. Matching the whole uebza.com suffix rather than one fixed host
+   means renaming the subdomain needs no code change. Everywhere else
+   (localhost, vercel.app previews) falls back to the Firebase domain, which
+   is not a host we can register as an OAuth redirect target. */
 const AUTH_DOMAIN =
-  typeof location !== 'undefined' && location.hostname === 'motm.uebza.com'
-    ? 'motm.uebza.com'
+  typeof location !== 'undefined' && location.hostname.endsWith('.uebza.com')
+    ? location.hostname
     : 'gjirafa-motm.firebaseapp.com';
 
 const firebaseConfig = {

@@ -1,5 +1,5 @@
 /* ============================================================
-   MOTM - Gjirafa mini football
+   MOTM - mini football
    Dark scoreboard UI in the SofaScore mould: top tab bar, dark
    surfaces, lime accent, rating chips banded by value.
    ============================================================ */
@@ -3202,13 +3202,6 @@ body.scroll-locked {
   font-size: 14.5px;
 }
 .signin-btn svg { flex: none; }
-
-.signin-note {
-  margin: 18px 0 0;
-  font-size: 12px;
-  line-height: 1.55;
-  color: var(--text-3);
-}
 
 /* Account photo and sign-out in the header. */
 .av-photo {

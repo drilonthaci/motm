@@ -2,9 +2,18 @@ import { initializeApp } from 'firebase/app';
 import { getAuth, GoogleAuthProvider } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
 
+/* Google shows the authDomain in its sign-in dialog, so on the live site we
+   point it at our own hostname and let vercel.json proxy /__/auth through to
+   Firebase. Anywhere else (localhost, previews) falls back to the Firebase
+   domain, which has no proxy in front of it. */
+const AUTH_DOMAIN =
+  typeof location !== 'undefined' && location.hostname === 'motm.uebza.com'
+    ? 'motm.uebza.com'
+    : 'gjirafa-motm.firebaseapp.com';
+
 const firebaseConfig = {
   apiKey: 'AIzaSyCmRiMTQgoJoyTKHpCXCthLVuhIZkalLgY',
-  authDomain: 'gjirafa-motm.firebaseapp.com',
+  authDomain: AUTH_DOMAIN,
   projectId: 'gjirafa-motm',
   storageBucket: 'gjirafa-motm.firebasestorage.app',
   messagingSenderId: '1063992757165',

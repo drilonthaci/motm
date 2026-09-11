@@ -1,7 +1,7 @@
 {
-  "name": "MOTM · Gjirafa Mini Football",
+  "name": "MOTM · Mini Football",
   "short_name": "MOTM",
-  "description": "Match tracker for the Gjirafa company 5+1 league: lineups, goals, ratings and player of the match.",
+  "description": "Match tracker for our 5+1 league: lineups, goals, ratings and player of the match.",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",

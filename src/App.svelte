@@ -33,7 +33,7 @@
     <div class="signin-card">
       <span class="signin-mark">M</span>
       <h1>MOTM</h1>
-      <p>Gjirafa mini football. Line up the squads, log the goals, rate the game.</p>
+      <p>Mini football. Line up, log the goals, rate the game.</p>
 
       {#if app.fatal}
         <div class="banner" style="text-align:left"><b>Firebase</b>{app.fatal}</div>
@@ -49,10 +49,6 @@
         {app.signingIn ? 'Opening Google...' : 'Continue with Google'}
       </button>
 
-      <p class="signin-note">
-        Any Google account works, personal or work. Signing in keeps you as the
-        same player on every device, so nothing shows up as already taken.
-      </p>
     </div>
   </div>
 {:else}

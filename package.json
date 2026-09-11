@@ -7,10 +7,12 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "votes": "node scripts/votes.mjs"
+    "votes": "node scripts/votes.mjs",
+    "reset": "node scripts/admin-reset.mjs"
   },
   "devDependencies": {
     "@sveltejs/vite-plugin-svelte": "latest",
+    "firebase-admin": "^14.4.0",
     "svelte": "latest",
     "vite": "latest"
   },

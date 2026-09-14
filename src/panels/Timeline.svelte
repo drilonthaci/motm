@@ -191,16 +191,9 @@
             {#if e.type === 'yellow' || e.type === 'red'}
               <i class="ev-card {e.type}"></i>
             {:else if e.type === 'save'}
-              <svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-                <path d="M8 1.5l5.5 2v4.2c0 3.2-2.2 5.6-5.5 6.8-3.3-1.2-5.5-3.6-5.5-6.8V3.5L8 1.5z"
-                  stroke="var(--text-2)" stroke-width="1.3" stroke-linejoin="round" />
-              </svg>
+              <Icon name="save" size={15} />
             {:else}
-              <svg width="15" height="15" viewBox="0 0 16 16" aria-hidden="true">
-                <circle cx="8" cy="8" r="6.6" fill={e.type === 'own_goal' ? 'none' : '#fff'}
-                  stroke={e.type === 'own_goal' ? 'var(--red)' : 'none'} stroke-width="1.4" />
-                <path d="M8 3.6l2.6 1.9-1 3.1H6.4l-1-3.1L8 3.6z" fill={e.type === 'own_goal' ? 'var(--red)' : '#111'} />
-              </svg>
+              <span class="ev-ball" class:og={e.type === 'own_goal'}><Icon name="ball" size={14} /></span>
             {/if}
           </span>
           <Crest side={e.team} size={16} />

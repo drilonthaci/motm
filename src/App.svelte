@@ -61,6 +61,10 @@
         {app.signingIn ? 'Opening Google...' : 'Continue with Google'}
       </button>
 
+      <p class="signin-credit">
+        Icons by <a href="https://www.flaticon.com/uicons" target="_blank" rel="noopener">Flaticon</a>
+      </p>
+
     </div>
   </div>
 {:else}
@@ -83,10 +87,7 @@
           <b>{app.name}</b>
         </span>
         <button class="signout" onclick={signOutNow} title="Sign out" aria-label="Sign out">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-            stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <path d="M15 17l5-5-5-5M20 12H9M11 4H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h5" />
-          </svg>
+          <Icon name="signout" size={16} />
         </button>
       </div>
     {/if}
@@ -99,7 +100,7 @@
           aria-label={item.label}
           title={item.label}
         >
-          <Icon name={item.icon} size={21} />
+          <Icon name={item.icon} size={21} solid={route.path === item.path || (item.path === '/' && matchId)} />
         </a>
       {/each}
     </nav>

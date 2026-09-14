@@ -1,4 +1,5 @@
 <script>
+  import Icon from './Icon.svelte';
   import { kit, startersOf, ratingColor } from './model.js';
 
   let { match, players, ratings = {}, goals = {} } = $props();
@@ -60,7 +61,7 @@
           {/if}
         </div>
         <span class="nm">
-          {first(player.name)}{#if goals[d.id]}<span class="goals"> ⚽{goals[d.id] > 1 ? goals[d.id] : ''}</span>{/if}
+          {first(player.name)}{#if goals[d.id]}<span class="goals"><Icon name="ball" size={9} />{goals[d.id] > 1 ? goals[d.id] : ''}</span>{/if}
         </span>
       </div>
     {/if}

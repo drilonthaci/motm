@@ -3602,3 +3602,34 @@ button,
   .tally-n b { font-size: 50px; }
   .todo-go { width: 30px; height: 30px; }
 }
+
+/* ---------- Flaticon UIcons ---------- */
+
+/* The glyphs are a font, so they sit on a text baseline by default. Force
+   them into a square box centred on the line so they align with text and
+   with each other regardless of context. */
+.ico-fi {
+  display: inline-grid;
+  place-content: center;
+  width: 1em;
+  height: 1em;
+  line-height: 1;
+  vertical-align: -0.15em;
+  flex: none;
+}
+.ico-fi::before { line-height: 1; }
+
+.emptystate .ico .ico-fi { color: var(--text-2); }
+.pillnav a .ico-fi { vertical-align: 0; }
+
+.ev-ball { display: grid; place-content: center; color: #fff; }
+.ev-ball.og { color: var(--red); }
+.goal-ball .ico-fi { color: #fff; }
+.pdot .goals .ico-fi { vertical-align: -0.1em; margin-right: 1px; }
+
+.signin-credit {
+  margin: 22px 0 0;
+  font-size: 11px;
+  color: var(--text-3);
+}
+.signin-credit a { color: var(--text-2); text-decoration: underline; text-underline-offset: 2px; }

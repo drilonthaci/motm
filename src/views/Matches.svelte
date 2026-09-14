@@ -126,10 +126,7 @@
           {[todo.unreported && 'Say if you scored', todo.unrated && 'Rate the match'].filter(Boolean).join(' · ')}
         </small>
       </span>
-      <span class="todo-go" aria-hidden="true">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-          stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6" /></svg>
-      </span>
+      <span class="todo-go" aria-hidden="true"><Icon name="chevron" size={18} /></span>
     </a>
   {/if}
 

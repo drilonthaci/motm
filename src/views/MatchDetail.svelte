@@ -8,6 +8,7 @@
   import Lineups from '../panels/Lineups.svelte';
   import Timeline from '../panels/Timeline.svelte';
   import Ratings from '../panels/Ratings.svelte';
+  import MyGoals from '../panels/MyGoals.svelte';
 
   let { id, tab = 'lineups' } = $props();
 
@@ -153,6 +154,10 @@
       <button class:on={tab === t.id} onclick={() => go(`/match/${id}/${t.id}`)}>{t.label}</button>
     {/each}
   </div>
+
+  {#if match.finished && app.meId}
+    <MyGoals {match} />
+  {/if}
 
   {#if tab === 'lineups'}
     <Lineups {match} ratings={summary} {goals} />

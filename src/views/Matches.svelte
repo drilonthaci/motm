@@ -2,7 +2,7 @@
   import { lockScroll } from '../lib/scrollLock.js';
   import Crest from '../lib/Crest.svelte';
   import Icon from '../lib/Icon.svelte';
-  import { scoreOf, isPlayed, seasonTable, ratingColor, sideOfPlayer, motmOf } from '../lib/model.js';
+  import { scoreOf, derivedScore, isPlayed, seasonTable, ratingColor, sideOfPlayer, motmOf } from '../lib/model.js';
   import { app, createMatch } from '../lib/store.svelte.js';
   import { go } from '../lib/router.svelte.js';
   import { dayNum, monthShort, dayName } from '../lib/dates.js';
@@ -37,6 +37,22 @@
       return map;
     }, {})
   );
+
+  /* The most recent match this person played in that is still missing
+     something only they can supply. Nothing gets filled in if nothing asks. */
+  let todo = $derived((() => {
+    if (!app.meId) return null;
+    for (const m of played) {
+      if (!sideOfPlayer(m, app.meId)) continue;
+      const total = scoreOf(m).a + scoreOf(m).b;
+      const named = derivedScore(m).a + derivedScore(m).b;
+      const unnamed = Math.max(0, total - named);
+      const unrated = !app.ratedMatches.includes(m.id);
+      if (unnamed || unrated) return { match: m, unnamed, unrated };
+      return null; // only ever nag about the latest one they played
+    }
+    return null;
+  })());
 
   /* Most recent match that actually crowned someone. */
   let mvp = $derived((() => {
@@ -101,6 +117,23 @@
     </div>
   </div>
 {:else}
+  {#if todo}
+    <a class="todo" href="#/match/{todo.match.id}/{todo.unnamed ? 'timeline' : 'ratings'}">
+      <span class="todo-dot"></span>
+      <span class="todo-txt">
+        <b>{dayName(todo.match.date)} {dayNum(todo.match.date)} {monthShort(todo.match.date)} needs you</b>
+        <small>
+          {#if todo.unnamed}
+            {todo.unnamed} goal{todo.unnamed === 1 ? '' : 's'} with nobody's name on {todo.unnamed === 1 ? 'it' : 'them'}
+          {/if}
+          {#if todo.unnamed && todo.unrated}&nbsp;·&nbsp;{/if}
+          {#if todo.unrated}you have not rated it{/if}
+        </small>
+      </span>
+      <span class="todo-go">Fix</span>
+    </a>
+  {/if}
+
   {#if mvp}
     <a class="mvp" href="#/match/{mvp.match.id}/ratings">
       <span class="mvp-glow" aria-hidden="true"></span>

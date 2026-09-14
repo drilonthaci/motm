@@ -5,7 +5,7 @@ import {
 } from 'firebase/auth';
 import {
   collection, doc, onSnapshot, setDoc, updateDoc, deleteDoc,
-  addDoc, getDocs, serverTimestamp, query, orderBy
+  addDoc, getDocs, serverTimestamp, query, orderBy, arrayUnion, arrayRemove
 } from 'firebase/firestore';
 import { ratingSummary, manOfTheMatch } from './model.js';
 
@@ -25,6 +25,8 @@ export const app = $state({
   claims: {},
   /** Dismissed the picker for this session without claiming. */
   claimSkipped: false,
+  /** Match ids this person has already submitted a rating card for. */
+  ratedMatches: [],
   ready: false,
   players: [],
   matches: [],
@@ -71,6 +73,7 @@ function watchEverything() {
       app.name = data?.displayName ?? app.name;
       app.needsName = !data?.displayName;
       app.meId = data?.playerId ?? null;
+      app.ratedMatches = data?.ratedMatches ?? [];
       app.needsClaim = Boolean(data?.displayName) && data?.playerId === undefined;
     }, (e) => blame(e, 'read your profile')),
 
@@ -185,7 +188,7 @@ export async function saveName(raw) {
  *  Otherwise switching identity is a one-tap route to rating yourself.
  *  Answering "not on the list" stores null and can be set later, which
  *  only ever narrows what you may rate. */
-export async function claimPlayer(playerId) {
+export async function claimPlayer(playerId, { silent = false } = {}) {
   // `undefined` reopens the picker, only reachable while unclaimed.
   if (playerId === undefined) {
     if (app.meId) return say('Who you are is locked. Ask an organiser to change it.');
@@ -220,8 +223,39 @@ export async function claimPlayer(playerId) {
     app.meId = playerId;
     app.needsClaim = false;
     app.claimSkipped = false;
-    say('Saved. You will not be able to rate yourself.');
+    if (!silent) say('Saved. You will not be able to rate yourself.');
   } catch (e) { blame(e, 'save who you are'); }
+}
+
+/* Albanian names carry diacritics that Google accounts often drop, so
+   compare on a stripped, case-folded form: "Leart Reçica" == "leart recica". */
+const normalise = (name) =>
+  (name ?? '')
+    .normalize('NFD')
+    .replace(/\p{Diacritic}/gu, '')
+    .toLowerCase()
+    .replace(/[^a-z ]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+
+/** Match the signed-in account to a roster player by name. Only acts on an
+ *  unambiguous, unclaimed match; anything else falls through to the picker
+ *  so we never silently assign somebody the wrong identity. */
+export async function tryAutoClaim() {
+  if (app.meId || !app.needsClaim || !app.name || !app.players.length) return false;
+
+  const mine = normalise(app.name);
+  if (!mine) return false;
+
+  const hits = app.players.filter((p) => normalise(p.name) === mine);
+  if (hits.length !== 1) return false;
+
+  const player = hits[0];
+  if (app.claims[player.id] && app.claims[player.id] !== app.uid) return false;
+
+  await claimPlayer(player.id, { silent: true });
+  if (app.meId === player.id) say(`Matched you to ${player.name}.`);
+  return true;
 }
 
 /** Close the picker without claiming. Rating stays blocked until they do. */
@@ -285,6 +319,53 @@ export async function deleteMatch(id) {
   } catch (e) { blame(e, 'delete the match'); }
 }
 
+/* ---------- events ---------- */
+
+/* Events are appended and removed atomically rather than by rewriting the
+   whole array. Right after a match several people report their goals at
+   once, and a read-modify-write would silently drop whichever landed
+   second. arrayUnion/arrayRemove only touch the elements named, so
+   concurrent reports cannot clobber each other. */
+
+export async function addEvent(matchId, event) {
+  try { await updateDoc(doc(db, 'matches', matchId), { events: arrayUnion(event) }); }
+  catch (e) { blame(e, 'log that event'); }
+}
+
+export async function removeEvent(matchId, event) {
+  try { await updateDoc(doc(db, 'matches', matchId), { events: arrayRemove(event) }); }
+  catch (e) { blame(e, 'remove that event'); }
+}
+
+/** Replace this player's own goals in one match.
+ *  Two writes rather than one, because a single update cannot both add to
+ *  and remove from the same array field. Each write only names this
+ *  player's own events, so other people reporting at the same time are
+ *  unaffected either way. */
+export async function setMyGoals(matchId, playerId, team, assists) {
+  const match = app.matches.find((m) => m.id === matchId);
+  if (!match) return;
+
+  const existing = (match.events ?? []).filter(
+    (e) => e.type === 'goal' && e.playerId === playerId
+  );
+  const wanted = assists.map((assistId, i) => ({
+    id: `${playerId}-${Date.now()}-${i}`,
+    minute: null,
+    type: 'goal',
+    team,
+    playerId,
+    assistId: assistId || null
+  }));
+
+  try {
+    const ref = doc(db, 'matches', matchId);
+    if (existing.length) await updateDoc(ref, { events: arrayRemove(...existing) });
+    if (wanted.length) await updateDoc(ref, { events: arrayUnion(...wanted) });
+    say(wanted.length ? `Saved ${wanted.length} goal${wanted.length === 1 ? '' : 's'}.` : 'Saved.');
+  } catch (e) { blame(e, 'save your goals'); }
+}
+
 /* ---------- ratings ---------- */
 
 export function watchCards(matchId) {
@@ -312,6 +393,11 @@ export async function submitCard(matchId, scores) {
     const summary = ratingSummary(snap.docs.map((d) => d.data()));
     const best = manOfTheMatch(summary);
     await updateDoc(doc(db, 'matches', matchId), { ratings: summary, motmId: best?.playerId ?? null });
+    await setDoc(
+      doc(db, 'profiles', app.uid),
+      { displayName: app.name, ratedMatches: arrayUnion(matchId) },
+      { merge: true }
+    );
     say('Ratings saved.');
   } catch (e) { blame(e, 'save your ratings'); }
 }

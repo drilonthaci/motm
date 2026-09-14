@@ -1,6 +1,6 @@
 <script>
   import { lockScroll } from './lib/scrollLock.js';
-  import { app, start, saveName, claimPlayer, skipClaim, signIn, signOutNow } from './lib/store.svelte.js';
+  import { app, start, saveName, claimPlayer, skipClaim, signIn, signOutNow, tryAutoClaim } from './lib/store.svelte.js';
   import { route } from './lib/router.svelte.js';
   import Matches from './views/Matches.svelte';
   import MatchDetail from './views/MatchDetail.svelte';
@@ -9,6 +9,16 @@
   import Icon from './lib/Icon.svelte';
 
   start();
+
+  /* Try to match the account to a roster player by name before bothering
+     anyone with the picker. Runs once the roster and existing claims have
+     arrived, since both are needed to know if the match is unambiguous. */
+  let autoClaimTried = $state(false);
+  $effect(() => {
+    if (autoClaimTried || !app.uid || !app.needsClaim || !app.players.length) return;
+    autoClaimTried = true;
+    tryAutoClaim();
+  });
 
   let nameDraft = $state('');
   let matchParts = $derived(route.path.startsWith('/match/') ? route.path.slice(7).split('/') : []);

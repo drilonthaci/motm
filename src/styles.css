@@ -3224,3 +3224,105 @@ body.scroll-locked {
 @media (max-width: 620px) {
   .greet-txt { max-width: 44vw; }
 }
+
+/* ---------- self-reported goals ---------- */
+
+.mine {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+  overflow: hidden;
+  margin-bottom: 16px;
+}
+.mine-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 13px 16px;
+  border-bottom: 1px solid var(--line);
+  background:
+    radial-gradient(120% 140% at 0% 0%, rgba(182, 236, 46, .10) 0%, transparent 60%),
+    transparent;
+}
+.mine-head h2 { font-size: 14.5px; font-weight: 700; white-space: nowrap; }
+.mine-body { padding: 16px; }
+
+.count-row { display: flex; gap: 8px; flex-wrap: wrap; }
+.count {
+  width: 46px;
+  height: 46px;
+  border-radius: 12px;
+  border: 1px solid var(--line);
+  background: var(--surface-2);
+  color: var(--text);
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  font-variant-numeric: tabular-nums;
+}
+.count:hover { border-color: var(--text-3); }
+.count.on {
+  background: var(--lime);
+  border-color: var(--lime);
+  color: var(--lime-ink);
+}
+
+.assist-row {
+  display: grid;
+  gap: 7px;
+  padding: 10px 0;
+  border-top: 1px solid var(--line);
+}
+.assist-n {
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: .05em;
+  text-transform: uppercase;
+  color: var(--text-3);
+}
+
+.mine-save { margin-top: 16px; }
+.mine-note { margin: 12px 0 0; font-size: 12px; color: var(--text-3); }
+
+/* ---------- home screen nudge ---------- */
+
+.todo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  margin-bottom: 14px;
+  border-radius: var(--r);
+  background: var(--surface);
+  border: 1px solid rgba(182, 236, 46, .35);
+  transition: border-color .14s;
+}
+.todo:hover { border-color: var(--lime); }
+.todo-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--lime);
+  flex: none;
+  box-shadow: 0 0 0 4px rgba(182, 236, 46, .15);
+}
+.todo-txt { display: grid; gap: 2px; min-width: 0; flex: 1; }
+.todo-txt b { font-size: 14px; font-weight: 700; }
+.todo-txt small { font-size: 12px; color: var(--text-2); }
+.todo-go {
+  flex: none;
+  padding: 7px 14px;
+  border-radius: 999px;
+  background: var(--lime);
+  color: var(--lime-ink);
+  font-size: 12.5px;
+  font-weight: 700;
+}
+
+@media (max-width: 620px) {
+  .count { width: 42px; height: 42px; }
+  .mine-head { padding: 12px 13px; }
+  .mine-body { padding: 13px; }
+  .todo { padding: 12px 13px; gap: 10px; }
+}

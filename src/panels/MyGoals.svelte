@@ -67,15 +67,17 @@
       {#if answered && !dirty}<span class="label saved-tag">Saved</span>{/if}
     </div>
 
-    <div class="mine-stepper">
-      <div class="stepper" role="group" aria-label="How many goals you scored">
-        <button class="step" onclick={() => setCount(draft.length - 1)} disabled={draft.length === 0} aria-label="One fewer">−</button>
-        <div class="step-n" aria-live="polite">
-          <b>{draft.length}</b>
-          <small>{draft.length === 1 ? 'goal' : 'goals'}</small>
-        </div>
-        <button class="step" onclick={() => setCount(draft.length + 1)} disabled={draft.length >= 30} aria-label="One more">+</button>
+    <div class="tally" role="group" aria-label="How many goals you scored">
+      <button class="tally-btn" onclick={() => setCount(draft.length - 1)} disabled={draft.length === 0} aria-label="One fewer">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" aria-hidden="true"><path d="M5 12h14" /></svg>
+      </button>
+      <div class="tally-n" aria-live="polite">
+        <b class:zero={draft.length === 0}>{draft.length}</b>
+        <small>{draft.length === 1 ? 'goal' : 'goals'}</small>
       </div>
+      <button class="tally-btn plus" onclick={() => setCount(draft.length + 1)} disabled={draft.length >= 30} aria-label="One more">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg>
+      </button>
     </div>
 
     {#if draft.length}

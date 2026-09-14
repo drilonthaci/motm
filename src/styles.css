@@ -3227,66 +3227,9 @@ body.scroll-locked {
 
 /* ---------- self-reported goals ---------- */
 
-/* One control, not three loose pieces: a single bordered pill with the
-   count in the middle and the buttons as its end caps. */
-.stepper {
-  display: inline-flex;
-  align-items: stretch;
-  border: 1px solid var(--line);
-  border-radius: 14px;
-  background: var(--surface-2);
-  overflow: hidden;
-}
-.step {
-  width: 52px;
-  border: 0;
-  background: transparent;
-  color: var(--text);
-  font-size: 22px;
-  font-weight: 500;
-  line-height: 1;
-  cursor: pointer;
-  transition: background .12s;
-}
-.step:hover:not(:disabled) { background: var(--surface-3); }
-.step:active:not(:disabled) { background: var(--lime); color: var(--lime-ink); }
-.step:disabled { color: var(--text-3); cursor: not-allowed; }
-.step-n {
-  min-width: 96px;
-  padding: 9px 12px 8px;
-  display: grid;
-  justify-items: center;
-  gap: 0;
-  border-left: 1px solid var(--line);
-  border-right: 1px solid var(--line);
-}
-.step-n b {
-  font-size: 26px;
-  font-weight: 800;
-  line-height: 1;
-  letter-spacing: -.03em;
-  font-variant-numeric: tabular-nums;
-}
-.step-n small {
-  font-size: 10.5px;
-  font-weight: 600;
-  letter-spacing: .06em;
-  text-transform: uppercase;
-  color: var(--text-3);
-  margin-top: 3px;
-}
-
 .mine { margin-bottom: 16px; }
 .mine .card-head h2 { white-space: nowrap; }
 .saved-tag { color: var(--lime); white-space: nowrap; }
-
-/* The count is the whole point of the card, so it sits centred with room
-   around it rather than tucked into a corner. */
-.mine-stepper {
-  display: flex;
-  justify-content: center;
-  padding: 22px 16px 20px;
-}
 
 /* One row per goal. The assist shows inline and expands on tap, so three
    goals are three lines, not three walls of the same chips. */
@@ -3337,6 +3280,61 @@ body.scroll-locked {
 
 .mine-foot { padding: 14px 16px 16px; border-top: 1px solid var(--line); }
 .mine-foot .btn { width: 100%; justify-content: center; padding: 12px; }
+
+/* The count reads like a scoreboard, not a form widget: one big numeral
+   in the accent colour, flanked by round buttons. Plus is filled because
+   adding a goal is the thing people came here to do. */
+.tally {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 24px;
+  padding: 22px 16px 18px;
+}
+.tally-btn {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  border: 1px solid var(--line);
+  background: var(--surface-2);
+  color: var(--text);
+  display: grid;
+  place-content: center;
+  cursor: pointer;
+  transition: transform .1s, border-color .12s, filter .12s;
+}
+.tally-btn:hover:not(:disabled) { border-color: var(--text-3); }
+.tally-btn:active:not(:disabled) { transform: scale(.93); }
+.tally-btn:disabled { opacity: .3; cursor: not-allowed; }
+.tally-btn.plus {
+  background: var(--lime);
+  border-color: var(--lime);
+  color: var(--lime-ink);
+}
+.tally-btn.plus:hover:not(:disabled) { filter: brightness(1.06); border-color: var(--lime); }
+
+.tally-n {
+  display: grid;
+  justify-items: center;
+  min-width: 84px;
+}
+.tally-n b {
+  font-size: 56px;
+  font-weight: 900;
+  line-height: .95;
+  letter-spacing: -.045em;
+  font-variant-numeric: tabular-nums;
+  color: var(--lime);
+}
+.tally-n b.zero { color: var(--text-3); }
+.tally-n small {
+  margin-top: 5px;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: .09em;
+  text-transform: uppercase;
+  color: var(--text-3);
+}
 
 /* ---------- home screen nudge ---------- */
 
@@ -3598,10 +3596,9 @@ button,
 .score-btn { font-variant-numeric: tabular-nums; }
 
 @media (max-width: 620px) {
-  .step { width: 50px; font-size: 20px; }
-  .step-n { min-width: 96px; }
-  .step-n b { font-size: 26px; }
   .goal-pick { padding-left: 16px; }
-  .mine-stepper { padding: 20px 14px 18px; }
+  .tally { gap: 18px; padding: 20px 14px 18px; }
+  .tally-btn { width: 48px; height: 48px; }
+  .tally-n b { font-size: 50px; }
   .todo-go { width: 30px; height: 30px; }
 }

@@ -3229,7 +3229,6 @@ body.scroll-locked {
 
 .mine { margin-bottom: 16px; }
 .mine .card-head h2 { white-space: nowrap; }
-.saved-tag { color: var(--lime); white-space: nowrap; }
 
 /* One row per goal. The assist shows inline and expands on tap, so three
    goals are three lines, not three walls of the same chips. */
@@ -3278,8 +3277,10 @@ body.scroll-locked {
 
 .goal-pick { padding: 4px 16px 15px 56px; }
 
-.mine-foot { padding: 14px 16px 16px; border-top: 1px solid var(--line); }
-.mine-foot .btn { width: 100%; justify-content: center; padding: 12px; }
+/* Save lives in the header, right of the title. Disabled reads as a quiet
+   'Saved' state rather than a greyed-out call to action. */
+.mine-save { flex: none; min-width: 68px; justify-content: center; }
+.mine-save:disabled { opacity: 1; background: transparent; color: var(--text-3); border-color: var(--line); }
 
 /* The count reads like a scoreboard, not a form widget: one big numeral
    in the accent colour, flanked by round buttons. Plus is filled because
@@ -3633,3 +3634,28 @@ button,
   color: var(--text-3);
 }
 .signin-credit a { color: var(--text-2); text-decoration: underline; text-underline-offset: 2px; }
+
+/* ---------- upcoming card ---------- */
+
+/* A fixture is not a result, so it is not a filled colour card. Dark,
+   outlined in the accent, with the kick-off time where a score would be. */
+.fxcard.tone-next {
+  background:
+    radial-gradient(120% 110% at 0% 0%, rgba(182, 236, 46, .12) 0%, transparent 60%),
+    var(--surface);
+  border: 1px solid rgba(182, 236, 46, .42);
+  --on: var(--text-3);
+}
+.fxcard.tone-next:hover { border-color: var(--lime); }
+.fxcard.tone-next .fx-when { color: var(--text-2); }
+.fxcard.tone-next .fx-foot { color: var(--text-3); border-top-color: var(--line); }
+.fxcard.tone-next .fx-score b.ko {
+  font-size: 26px;
+  font-weight: 800;
+  letter-spacing: -.03em;
+  color: var(--lime);
+  font-variant-numeric: tabular-nums;
+}
+.fxcard.tone-next .fx-score small { color: var(--text-3); }
+.fxcard.tone-next .pill.next { background: var(--lime); color: var(--lime-ink); }
+.fx-in { color: var(--lime); font-weight: 700; }

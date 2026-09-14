@@ -17,7 +17,7 @@
     chevron: 'angle-small-right',
     minus: 'minus',
     plus: 'plus',
-    signout: 'sign-out-alt'
+    signout: 'exit'
   };
 </script>
 

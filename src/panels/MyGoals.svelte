@@ -65,7 +65,9 @@
   <section class="card mine">
     <div class="card-head">
       <h2>Did you score?</h2>
-      {#if answered && !dirty}<span class="label saved-tag">Saved</span>{/if}
+      <button class="btn sm mine-save" class:primary={dirty} onclick={save} disabled={!dirty}>
+        {dirty ? 'Save' : 'Saved'}
+      </button>
     </div>
 
     <div class="tally" role="group" aria-label="How many goals you scored">
@@ -110,10 +112,5 @@
       </div>
     {/if}
 
-    <div class="mine-foot">
-      <button class="btn primary" onclick={save} disabled={!dirty}>
-        {dirty ? (draft.length ? 'Save my goals' : 'Confirm, no goals') : 'Saved'}
-      </button>
-    </div>
   </section>
 {/if}

@@ -30,13 +30,15 @@
     return parts.length > 1 ? `${parts[0][0]}. ${parts.at(-1)}` : parts[0];
   };
 
-  /* Cards alternate lime and violet down the page, soonest match first. */
+  /* Results alternate lime and violet down the page. Upcoming matches are
+     not results, so they get their own outlined look instead of a colour. */
   let tones = $derived(
-    [...upcoming.slice().reverse(), ...played].reduce((map, m, i) => {
+    played.reduce((map, m, i) => {
       map[m.id] = i % 2 === 0 ? 'lime' : 'violet';
       return map;
     }, {})
   );
+  const inCount = (m) => (m.available ?? []).length;
 
   /* The most recent match this person played in that is still missing
      something only they can supply. Nothing gets filled in if nothing asks.
@@ -178,7 +180,7 @@
         {#each group.list as match (match.id)}
           {@const s = scoreOf(match)}
           {@const live = !match.finished && (match.events?.length ?? 0) > 0}
-          <a class="fxcard tone-{tones[match.id]}" href="#/match/{match.id}">
+          <a class="fxcard tone-{match.finished ? tones[match.id] : 'next'}" href="#/match/{match.id}">
             <div class="fx-head">
               <span class="fx-when">{dayName(match.date)} {dayNum(match.date)} {monthShort(match.date)} · {match.time || 'TBC'}</span>
               {#if live}
@@ -199,9 +201,7 @@
                 {#if match.finished || live}
                   <b>{s.a} <i>:</i> {s.b}</b>
                 {:else}
-                  <b class="vs">vs</b>
-                {/if}
-                {#if !match.finished && !live}
+                  <b class="ko">{match.time || 'TBC'}</b>
                   <small>KICK-OFF</small>
                 {/if}
               </div>
@@ -217,7 +217,11 @@
               {:else}
                 <span>{match.venue || 'Venue TBC'}</span>
               {/if}
-              <span>{named(match) ? `${named(match)} named` : 'No squads yet'}</span>
+              {#if match.finished}
+                <span>{named(match) ? `${named(match)} named` : 'No squads yet'}</span>
+              {:else}
+                <span class="fx-in">{inCount(match) ? `${inCount(match)} in` : 'Who is in?'}</span>
+              {/if}
             </div>
           </a>
         {/each}

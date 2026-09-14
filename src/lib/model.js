@@ -225,3 +225,84 @@ export function headToHead(matches) {
   }
   return { aWins, bWins, draws, goalsA, goalsB, played };
 }
+
+/* ---------- per player history ---------- */
+
+/** Every played match this player appeared in, most recent first, with what
+ *  they did in it. Used by the profile page and the form guide. */
+export function playerMatches(matches, playerId) {
+  return matches
+    .filter(isPlayed)
+    .filter((m) => sideOfPlayer(m, playerId))
+    .sort((a, b) => (b.date ?? '').localeCompare(a.date ?? ''))
+    .map((m) => {
+      const side = sideOfPlayer(m, playerId);
+      const { a, b } = scoreOf(m);
+      const mine = side === 'A' ? a : b;
+      const theirs = side === 'A' ? b : a;
+      const events = m.events ?? [];
+      return {
+        match: m,
+        side,
+        for: mine,
+        against: theirs,
+        result: mine > theirs ? 'W' : mine === theirs ? 'D' : 'L',
+        goals: events.filter((e) => e.type === 'goal' && e.playerId === playerId).length,
+        assists: events.filter((e) => e.assistId === playerId).length,
+        rating: m.ratings?.[playerId]?.avg ?? null,
+        motm: motmOf(m) === playerId
+      };
+    });
+}
+
+/** Most recent results first, newest on the left. */
+export const playerForm = (matches, playerId, take = 5) =>
+  playerMatches(matches, playerId).slice(0, take).map((r) => r.result);
+
+/* ---------- team balancing ---------- */
+
+/** Split the available players into two squads of similar strength.
+ *
+ *  Keepers are dealt one per side first, because two keepers on one team
+ *  and none on the other is a worse outcome than any rating imbalance.
+ *  The rest go strongest-first to whichever side is currently weaker,
+ *  which gets close to optimal without the cost of trying every split. */
+export function balanceTeams(available, ratingOf, { unrated = 6.5 } = {}) {
+  const strength = (p) => ratingOf(p.id) ?? unrated;
+  const keepers = available.filter((p) => p.position === 'GK');
+  const rest = available
+    .filter((p) => p.position !== 'GK')
+    .sort((x, y) => strength(y) - strength(x));
+
+  const squads = { A: [], B: [] };
+  const total = { A: 0, B: 0 };
+
+  const put = (side, player) => {
+    squads[side].push(player);
+    total[side] += strength(player);
+  };
+
+  keepers
+    .sort((x, y) => strength(y) - strength(x))
+    .forEach((k, i) => {
+      // First two keepers split up; any extra are treated as outfielders.
+      if (i < 2) put(i === 0 ? 'A' : 'B', k);
+      else rest.push(k);
+    });
+
+  for (const player of rest) {
+    const aShort = squads.A.length < squads.B.length;
+    const bShort = squads.B.length < squads.A.length;
+    if (aShort) put('A', player);
+    else if (bShort) put('B', player);
+    else put(total.A <= total.B ? 'A' : 'B', player);
+  }
+
+  return {
+    A: squads.A,
+    B: squads.B,
+    strengthA: total.A,
+    strengthB: total.B,
+    gap: Math.abs(total.A - total.B)
+  };
+}

@@ -9,6 +9,7 @@
   import Timeline from '../panels/Timeline.svelte';
   import Ratings from '../panels/Ratings.svelte';
   import MyGoals from '../panels/MyGoals.svelte';
+  import Availability from '../panels/Availability.svelte';
 
   let { id, tab = 'lineups' } = $props();
 
@@ -157,6 +158,8 @@
 
   {#if match.finished && app.meId}
     <MyGoals {match} />
+  {:else if !match.finished}
+    <Availability {match} />
   {/if}
 
   {#if tab === 'lineups'}

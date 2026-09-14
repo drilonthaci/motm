@@ -69,7 +69,7 @@
           <div class="rp" class:inactive={player.active === false}>
             <span class="pav">{initials(player.name)}</span>
 
-            <span class="rp-name">{player.name}</span>
+            <a class="rp-name" href="#/player/{player.id}">{player.name}</a>
 
             <span class="rp-meta">
               <i class="rp-pos">{player.position || 'MID'}</i>

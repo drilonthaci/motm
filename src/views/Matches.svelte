@@ -2,7 +2,7 @@
   import { lockScroll } from '../lib/scrollLock.js';
   import Crest from '../lib/Crest.svelte';
   import Icon from '../lib/Icon.svelte';
-  import { scoreOf, derivedScore, isPlayed, seasonTable, ratingColor, sideOfPlayer, motmOf } from '../lib/model.js';
+  import { scoreOf, isPlayed, seasonTable, ratingColor, sideOfPlayer, motmOf } from '../lib/model.js';
   import { app, createMatch } from '../lib/store.svelte.js';
   import { go } from '../lib/router.svelte.js';
   import { dayNum, monthShort, dayName } from '../lib/dates.js';
@@ -39,17 +39,17 @@
   );
 
   /* The most recent match this person played in that is still missing
-     something only they can supply. Nothing gets filled in if nothing asks. */
+     something only they can supply. Nothing gets filled in if nothing asks.
+     Deliberately asks whether they have answered rather than counting goals
+     against the scoreline: the score is a net lead, so a 0-0 can still hide
+     six goals and any arithmetic on it would be wrong. */
   let todo = $derived((() => {
     if (!app.meId) return null;
     for (const m of played) {
       if (!sideOfPlayer(m, app.meId)) continue;
-      const total = scoreOf(m).a + scoreOf(m).b;
-      const named = derivedScore(m).a + derivedScore(m).b;
-      const unnamed = Math.max(0, total - named);
+      const unreported = !app.reportedMatches.includes(m.id);
       const unrated = !app.ratedMatches.includes(m.id);
-      if (unnamed || unrated) return { match: m, unnamed, unrated };
-      return null; // only ever nag about the latest one they played
+      return unreported || unrated ? { match: m, unreported, unrated } : null;
     }
     return null;
   })());
@@ -118,15 +118,13 @@
   </div>
 {:else}
   {#if todo}
-    <a class="todo" href="#/match/{todo.match.id}/{todo.unnamed ? 'timeline' : 'ratings'}">
+    <a class="todo" href="#/match/{todo.match.id}/{todo.unreported ? 'lineups' : 'ratings'}">
       <span class="todo-dot"></span>
       <span class="todo-txt">
         <b>{dayName(todo.match.date)} {dayNum(todo.match.date)} {monthShort(todo.match.date)} needs you</b>
         <small>
-          {#if todo.unnamed}
-            {todo.unnamed} goal{todo.unnamed === 1 ? '' : 's'} with nobody's name on {todo.unnamed === 1 ? 'it' : 'them'}
-          {/if}
-          {#if todo.unnamed && todo.unrated}&nbsp;·&nbsp;{/if}
+          {#if todo.unreported}you have not said if you scored{/if}
+          {#if todo.unreported && todo.unrated}&nbsp;·&nbsp;{/if}
           {#if todo.unrated}you have not rated it{/if}
         </small>
       </span>

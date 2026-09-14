@@ -116,13 +116,13 @@
     </div>
     {#each rows as r, i (r.id)}
       <div class="statrow">
-        <span class="who">
+        <a class="who" href="#/player/{r.id}">
           <i class="rk">{i + 1}</i>
           <span class="nm">
             {r.name}
             <small>{r.apps} {r.apps === 1 ? 'app' : 'apps'} · {r.position}</small>
           </span>
-        </span>
+        </a>
         <span class="v" class:zero={!r.goals}>{r.goals}</span>
         <span class="v" class:zero={!r.assists}>{r.assists}</span>
         <span class="v" class:zero={!r.motm}>{r.motm}</span>

@@ -3326,3 +3326,204 @@ body.scroll-locked {
   .mine-body { padding: 13px; }
   .todo { padding: 12px 13px; gap: 10px; }
 }
+
+/* ---------- availability ---------- */
+
+.avail-me {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding-bottom: 4px;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.avail-chip {
+  padding: 5px 11px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: var(--surface-2);
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--text-2);
+}
+.avail-chip.in { border-color: rgba(182, 236, 46, .45); color: var(--lime); }
+.avail-chip.out { color: var(--text-3); opacity: .7; }
+
+.pick {
+  margin-top: 18px;
+  padding-top: 16px;
+  border-top: 1px solid var(--line);
+}
+.pick-head { display: flex; justify-content: space-between; gap: 10px; margin-bottom: 10px; }
+.pick-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.pick-grid > * { min-width: 0; }
+.pick-side {
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+  border-radius: var(--r-sm);
+  padding: 11px 12px;
+}
+.pick-side-head {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin-bottom: 9px;
+  font-size: 12.5px;
+  font-weight: 700;
+}
+.pick-name {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 4px 0;
+  font-size: 13px;
+  font-weight: 500;
+}
+.pick-name i { font-style: normal; color: var(--text-3); font-variant-numeric: tabular-nums; }
+
+/* ---------- player profile ---------- */
+
+.pp {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  padding: 18px;
+  border-radius: 20px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+}
+.pp-glow {
+  position: absolute;
+  z-index: -1;
+  top: -130px;
+  left: -70px;
+  width: 300px;
+  height: 300px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(182, 236, 46, .18) 0%, transparent 68%);
+}
+.pp-av {
+  width: 58px;
+  height: 58px;
+  border-radius: 50%;
+  flex: none;
+  display: grid;
+  place-content: center;
+  background: var(--lime);
+  color: var(--lime-ink);
+  font-size: 19px;
+  font-weight: 800;
+}
+.pp-id { flex: 1; min-width: 0; }
+.pp-id h1 { font-size: 24px; font-weight: 800; letter-spacing: -.025em; overflow-wrap: anywhere; }
+.pp-id p { margin: 3px 0 0; font-size: 12.5px; color: var(--text-2); }
+
+.pp-stats {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  margin-top: 12px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+  overflow: hidden;
+}
+.pp-stats > div {
+  display: grid;
+  gap: 3px;
+  justify-items: center;
+  padding: 13px 4px 14px;
+  border-left: 1px solid var(--line);
+}
+.pp-stats > div:first-child { border-left: 0; }
+.pp-stats small {
+  font-size: 9.5px;
+  font-weight: 600;
+  letter-spacing: .05em;
+  text-transform: uppercase;
+  color: var(--text-3);
+}
+.pp-stats b { font-size: 20px; font-weight: 800; font-variant-numeric: tabular-nums; }
+.pp-stats b.wdl { font-size: 15px; }
+
+/* ---------- form ---------- */
+
+.form-row { display: flex; gap: 7px; }
+.form-dot {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  display: grid;
+  place-content: center;
+  font-size: 13px;
+  font-weight: 800;
+  color: #fff;
+}
+.form-dot.W { background: #18a05a; }
+.form-dot.D { background: #6b7178; }
+.form-dot.L { background: var(--red); }
+
+/* ---------- player match history ---------- */
+
+.ph {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 11px 16px;
+  border-bottom: 1px solid var(--line);
+}
+.ph:last-child { border-bottom: 0; }
+.ph:hover { background: var(--surface-2); }
+.ph-res {
+  width: 26px;
+  height: 26px;
+  border-radius: 8px;
+  flex: none;
+  display: grid;
+  place-content: center;
+  font-size: 11.5px;
+  font-weight: 800;
+  color: #fff;
+}
+.ph-res.W { background: #18a05a; }
+.ph-res.D { background: #6b7178; }
+.ph-res.L { background: var(--red); }
+.ph-main { flex: 1; min-width: 0; display: grid; gap: 2px; }
+.ph-main b { font-size: 14px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.ph-main small {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11.5px;
+  color: var(--text-3);
+}
+.ph-did { display: flex; gap: 5px; flex: none; }
+.ph-tag {
+  font-style: normal;
+  font-size: 10.5px;
+  font-weight: 700;
+  padding: 3px 7px;
+  border-radius: 5px;
+  background: var(--surface-3);
+  color: var(--text-2);
+}
+.ph-tag.motm { background: var(--lime); color: var(--lime-ink); }
+
+/* Names that lead somewhere should look like it on hover. */
+.rp-name:hover,
+.statrow .who:hover .nm { color: var(--lime); }
+
+@media (max-width: 620px) {
+  .pick-grid { grid-template-columns: 1fr; }
+  .pp { padding: 15px; gap: 13px; }
+  .pp-av { width: 52px; height: 52px; font-size: 17px; }
+  .pp-id h1 { font-size: 21px; }
+  .pp-stats b { font-size: 18px; }
+  .pp-stats b.wdl { font-size: 13.5px; }
+  .ph-did { display: none; }
+}

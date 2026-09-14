@@ -27,6 +27,8 @@ export const app = $state({
   claimSkipped: false,
   /** Match ids this person has already submitted a rating card for. */
   ratedMatches: [],
+  /** Match ids this person has already answered "did you score" for. */
+  reportedMatches: [],
   ready: false,
   players: [],
   matches: [],
@@ -74,6 +76,7 @@ function watchEverything() {
       app.needsName = !data?.displayName;
       app.meId = data?.playerId ?? null;
       app.ratedMatches = data?.ratedMatches ?? [];
+      app.reportedMatches = data?.reportedMatches ?? [];
       app.needsClaim = Boolean(data?.displayName) && data?.playerId === undefined;
     }, (e) => blame(e, 'read your profile')),
 
@@ -319,6 +322,32 @@ export async function deleteMatch(id) {
   } catch (e) { blame(e, 'delete the match'); }
 }
 
+/* ---------- availability ---------- */
+
+/** Say whether you are playing. Both lists are updated so switching answer
+ *  cannot leave you counted twice, and arrayUnion keeps concurrent replies
+ *  from overwriting each other. */
+export async function setAvailability(matchId, playerId, playing) {
+  try {
+    await updateDoc(doc(db, 'matches', matchId), {
+      available: playing ? arrayUnion(playerId) : arrayRemove(playerId),
+      unavailable: playing ? arrayRemove(playerId) : arrayUnion(playerId)
+    });
+  } catch (e) { blame(e, 'save your answer'); }
+}
+
+export async function applyTeams(matchId, squads) {
+  const slot = (p) => ({ id: p.id, pos: p.position || 'MID', bench: false });
+  try {
+    await updateDoc(doc(db, 'matches', matchId), {
+      lineupA: squads.A.map(slot),
+      lineupB: squads.B.map(slot),
+      updatedAt: serverTimestamp()
+    });
+    say('Teams picked. Drag anyone across if you disagree.');
+  } catch (e) { blame(e, 'save the teams'); }
+}
+
 /* ---------- events ---------- */
 
 /* Events are appended and removed atomically rather than by rewriting the
@@ -362,7 +391,15 @@ export async function setMyGoals(matchId, playerId, team, assists) {
     const ref = doc(db, 'matches', matchId);
     if (existing.length) await updateDoc(ref, { events: arrayRemove(...existing) });
     if (wanted.length) await updateDoc(ref, { events: arrayUnion(...wanted) });
-    say(wanted.length ? `Saved ${wanted.length} goal${wanted.length === 1 ? '' : 's'}.` : 'Saved.');
+
+    /* Record that they answered. "I scored none" leaves no event behind, so
+       without this it is indistinguishable from never having been asked. */
+    await setDoc(
+      doc(db, 'profiles', app.uid),
+      { displayName: app.name, reportedMatches: arrayUnion(matchId) },
+      { merge: true }
+    );
+    say(wanted.length ? `Saved ${wanted.length} goal${wanted.length === 1 ? '' : 's'}.` : 'Saved, no goals.');
   } catch (e) { blame(e, 'save your goals'); }
 }
 

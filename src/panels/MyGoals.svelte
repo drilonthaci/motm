@@ -29,9 +29,13 @@
     draft = myGoals.map((e) => e.assistId ?? '');
   });
 
+  /* Answering "none" is still an answer, so an untouched card counts as
+     unsaved until they confirm it. */
+  let answered = $derived(app.reportedMatches.includes(match.id));
   let dirty = $derived(
     draft !== null &&
-      (draft.length !== myGoals.length ||
+      (!answered ||
+        draft.length !== myGoals.length ||
         draft.some((a, i) => (a || null) !== (myGoals[i]?.assistId ?? null)))
   );
 

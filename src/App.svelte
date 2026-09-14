@@ -6,6 +6,7 @@
   import MatchDetail from './views/MatchDetail.svelte';
   import Roster from './views/Roster.svelte';
   import Season from './views/Season.svelte';
+  import Player from './views/Player.svelte';
   import Icon from './lib/Icon.svelte';
 
   start();
@@ -24,6 +25,7 @@
   let matchParts = $derived(route.path.startsWith('/match/') ? route.path.slice(7).split('/') : []);
   let matchId = $derived(matchParts[0] || null);
   let matchTab = $derived(matchParts[1] || 'lineups');
+  let playerId = $derived(route.path.startsWith('/player/') ? route.path.slice(8) : null);
 
   const NAV = [
     { href: '#/', path: '/', label: 'Matches', icon: 'home' },
@@ -111,6 +113,8 @@
 
   {#if matchId}
     <MatchDetail id={matchId} tab={matchTab} />
+  {:else if playerId}
+    <Player id={playerId} />
   {:else if route.path === '/squad'}
     <Roster />
   {:else if route.path === '/season'}

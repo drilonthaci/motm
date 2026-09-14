@@ -3621,6 +3621,21 @@ button,
 .ico-fi::before { line-height: 1; }
 
 .emptystate .ico .ico-fi { color: var(--text-2); }
+
+/* Hand-picked Flaticon PNGs painted through a mask, so they recolour with
+   currentColor exactly like the font glyphs. 512px source, so crisp at any
+   UI size. */
+.ico-img {
+  display: inline-block;
+  width: 1em;
+  height: 1em;
+  vertical-align: -0.15em;
+  flex: none;
+  background-color: currentColor;
+  -webkit-mask: var(--ico) center / contain no-repeat;
+  mask: var(--ico) center / contain no-repeat;
+}
+.pillnav a .ico-img { vertical-align: 0; }
 .pillnav a .ico-fi { vertical-align: 0; }
 
 .ev-ball { display: grid; place-content: center; color: #fff; }

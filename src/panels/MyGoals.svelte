@@ -40,6 +40,7 @@
   );
 
   const setCount = (n) => {
+    n = Math.max(0, Math.min(30, n));
     const next = (draft ?? []).slice(0, n);
     while (next.length < n) next.push('');
     draft = next;
@@ -56,10 +57,11 @@
     </div>
 
     <div class="mine-body">
-      <div class="count-row">
-        {#each [0, 1, 2, 3, 4, 5] as n}
-          <button class="count" class:on={draft.length === n} onclick={() => setCount(n)}>{n}</button>
-        {/each}
+      <div class="stepper" role="group" aria-label="How many goals you scored">
+        <button class="step" onclick={() => setCount(draft.length - 1)} disabled={draft.length === 0} aria-label="One fewer">−</button>
+        <span class="step-n" aria-live="polite">{draft.length}</span>
+        <button class="step" onclick={() => setCount(draft.length + 1)} disabled={draft.length >= 30} aria-label="One more">+</button>
+        <span class="step-word">{draft.length === 1 ? 'goal' : 'goals'}</span>
       </div>
 
       {#if draft.length}

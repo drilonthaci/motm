@@ -121,14 +121,15 @@
     <a class="todo" href="#/match/{todo.match.id}/{todo.unreported ? 'lineups' : 'ratings'}">
       <span class="todo-dot"></span>
       <span class="todo-txt">
-        <b>{dayName(todo.match.date)} {dayNum(todo.match.date)} {monthShort(todo.match.date)} needs you</b>
+        <b>{dayName(todo.match.date)} {dayNum(todo.match.date)} {monthShort(todo.match.date)} is waiting on you</b>
         <small>
-          {#if todo.unreported}you have not said if you scored{/if}
-          {#if todo.unreported && todo.unrated}&nbsp;·&nbsp;{/if}
-          {#if todo.unrated}you have not rated it{/if}
+          {[todo.unreported && 'Say if you scored', todo.unrated && 'Rate the match'].filter(Boolean).join(' · ')}
         </small>
       </span>
-      <span class="todo-go">Fix</span>
+      <span class="todo-go" aria-hidden="true">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+          stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6" /></svg>
+      </span>
     </a>
   {/if}
 

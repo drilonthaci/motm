@@ -3248,25 +3248,34 @@ body.scroll-locked {
 .mine-head h2 { font-size: 14.5px; font-weight: 700; white-space: nowrap; }
 .mine-body { padding: 16px; }
 
-.count-row { display: flex; gap: 8px; flex-wrap: wrap; }
-.count {
+.stepper {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.step {
   width: 46px;
   height: 46px;
   border-radius: 12px;
   border: 1px solid var(--line);
   background: var(--surface-2);
   color: var(--text);
-  font-size: 16px;
-  font-weight: 700;
+  font-size: 22px;
+  font-weight: 600;
+  line-height: 1;
   cursor: pointer;
+}
+.step:hover:not(:disabled) { border-color: var(--text-3); }
+.step:disabled { opacity: .3; cursor: not-allowed; }
+.step-n {
+  min-width: 52px;
+  text-align: center;
+  font-size: 30px;
+  font-weight: 800;
+  letter-spacing: -.03em;
   font-variant-numeric: tabular-nums;
 }
-.count:hover { border-color: var(--text-3); }
-.count.on {
-  background: var(--lime);
-  border-color: var(--lime);
-  color: var(--lime-ink);
-}
+.step-word { margin-left: 4px; font-size: 13px; color: var(--text-2); }
 
 .assist-row {
   display: grid;
@@ -3312,16 +3321,16 @@ body.scroll-locked {
 .todo-txt small { font-size: 12px; color: var(--text-2); }
 .todo-go {
   flex: none;
-  padding: 7px 14px;
-  border-radius: 999px;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: grid;
+  place-content: center;
   background: var(--lime);
   color: var(--lime-ink);
-  font-size: 12.5px;
-  font-weight: 700;
 }
 
 @media (max-width: 620px) {
-  .count { width: 42px; height: 42px; }
   .mine-head { padding: 12px 13px; }
   .mine-body { padding: 13px; }
   .todo { padding: 12px 13px; gap: 10px; }
@@ -3526,4 +3535,26 @@ body.scroll-locked {
   .pp-stats b { font-size: 18px; }
   .pp-stats b.wdl { font-size: 13.5px; }
   .ph-did { display: none; }
+}
+
+/* Buttons never wrap. A two-line button reads as broken, and every button
+   here is short enough to fit on one line at 320px once it is allowed to
+   shrink its padding instead. */
+button,
+.btn,
+.pill,
+.rating,
+.rowmenu-btn,
+.avail,
+.avail-chip,
+.you-tag,
+.score-btn {
+  white-space: nowrap;
+}
+.score-btn { font-variant-numeric: tabular-nums; }
+
+@media (max-width: 620px) {
+  .step { width: 42px; height: 42px; font-size: 20px; }
+  .step-n { min-width: 46px; font-size: 27px; }
+  .todo-go { width: 30px; height: 30px; }
 }

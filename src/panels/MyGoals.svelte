@@ -53,15 +53,17 @@
   <section class="mine">
     <div class="mine-head">
       <h2>Did you score?</h2>
-      <span class="label">Only you can remember this</span>
+      <span class="label">Your goals</span>
     </div>
 
     <div class="mine-body">
       <div class="stepper" role="group" aria-label="How many goals you scored">
         <button class="step" onclick={() => setCount(draft.length - 1)} disabled={draft.length === 0} aria-label="One fewer">−</button>
-        <span class="step-n" aria-live="polite">{draft.length}</span>
+        <div class="step-n" aria-live="polite">
+          <b>{draft.length}</b>
+          <small>{draft.length === 1 ? 'goal' : 'goals'}</small>
+        </div>
         <button class="step" onclick={() => setCount(draft.length + 1)} disabled={draft.length >= 30} aria-label="One more">+</button>
-        <span class="step-word">{draft.length === 1 ? 'goal' : 'goals'}</span>
       </div>
 
       {#if draft.length}

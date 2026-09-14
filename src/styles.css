@@ -3246,36 +3246,58 @@ body.scroll-locked {
     transparent;
 }
 .mine-head h2 { font-size: 14.5px; font-weight: 700; white-space: nowrap; }
+.mine-head .label,
+.card-head .label { white-space: nowrap; }
 .mine-body { padding: 16px; }
 
+/* One control, not three loose pieces: a single bordered pill with the
+   count in the middle and the buttons as its end caps. */
 .stepper {
   display: inline-flex;
-  align-items: center;
-  gap: 6px;
+  align-items: stretch;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--surface-2);
+  overflow: hidden;
 }
 .step {
-  width: 46px;
-  height: 46px;
-  border-radius: 12px;
-  border: 1px solid var(--line);
-  background: var(--surface-2);
+  width: 52px;
+  border: 0;
+  background: transparent;
   color: var(--text);
   font-size: 22px;
-  font-weight: 600;
+  font-weight: 500;
   line-height: 1;
   cursor: pointer;
+  transition: background .12s;
 }
-.step:hover:not(:disabled) { border-color: var(--text-3); }
-.step:disabled { opacity: .3; cursor: not-allowed; }
+.step:hover:not(:disabled) { background: var(--surface-3); }
+.step:active:not(:disabled) { background: var(--lime); color: var(--lime-ink); }
+.step:disabled { color: var(--text-3); cursor: not-allowed; }
 .step-n {
-  min-width: 52px;
-  text-align: center;
-  font-size: 30px;
+  min-width: 96px;
+  padding: 9px 12px 8px;
+  display: grid;
+  justify-items: center;
+  gap: 0;
+  border-left: 1px solid var(--line);
+  border-right: 1px solid var(--line);
+}
+.step-n b {
+  font-size: 26px;
   font-weight: 800;
+  line-height: 1;
   letter-spacing: -.03em;
   font-variant-numeric: tabular-nums;
 }
-.step-word { margin-left: 4px; font-size: 13px; color: var(--text-2); }
+.step-n small {
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  color: var(--text-3);
+  margin-top: 3px;
+}
 
 .assist-row {
   display: grid;
@@ -3554,7 +3576,8 @@ button,
 .score-btn { font-variant-numeric: tabular-nums; }
 
 @media (max-width: 620px) {
-  .step { width: 42px; height: 42px; font-size: 20px; }
-  .step-n { min-width: 46px; font-size: 27px; }
+  .step { width: 48px; font-size: 20px; }
+  .step-n { min-width: 88px; }
+  .step-n b { font-size: 24px; }
   .todo-go { width: 30px; height: 30px; }
 }

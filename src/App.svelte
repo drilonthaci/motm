@@ -61,10 +61,6 @@
         {app.signingIn ? 'Opening Google...' : 'Continue with Google'}
       </button>
 
-      <p class="signin-credit">
-        Icons by <a href="https://www.flaticon.com/uicons" target="_blank" rel="noopener">Flaticon</a>
-      </p>
-
     </div>
   </div>
 {:else}

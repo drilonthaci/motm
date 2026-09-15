@@ -3642,14 +3642,6 @@ button,
 .ev-ball.og { color: var(--red); }
 .goal-ball .ico-fi { color: #fff; }
 .pdot .goals .ico-fi { vertical-align: -0.1em; margin-right: 1px; }
-
-.signin-credit {
-  margin: 22px 0 0;
-  font-size: 11px;
-  color: var(--text-3);
-}
-.signin-credit a { color: var(--text-2); text-decoration: underline; text-underline-offset: 2px; }
-
 /* ---------- upcoming card ---------- */
 
 /* A fixture is not a result, so it is not a filled colour card. Dark,
